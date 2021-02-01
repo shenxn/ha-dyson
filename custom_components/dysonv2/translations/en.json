@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "serial": "Serial",
+          "credential": "Credential",
+          "host": "Host",
+          "device_type": "Device Type"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot connect to the device"
+    },
+    "abort": {
+      "already_configured": "Device already configured"
+    }
+  }
+}

@@ -6,14 +6,14 @@ from homeassistant.components.sensor import DEVICE_CLASS_BATTERY
 from homeassistant.config_entries import ConfigEntry
 
 from . import DysonEntity
-from .const import DOMAIN
+from .const import DATA_DEVICES, DOMAIN
 
 
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
 ) -> None:
     """Set up Dyson sensor from a config entry."""
-    device = hass.data[DOMAIN][config_entry.entry_id]
+    device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     entity = Dyson360EyeBatterySensor(device)
     async_add_entities([entity])
 

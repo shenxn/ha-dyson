@@ -8,7 +8,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
 from . import DysonEntity
-from .const import DOMAIN
+from .const import DATA_DEVICES, DOMAIN
 
 SUPPORT_360_EYE = (
     SUPPORT_START
@@ -55,7 +55,7 @@ async def async_setup_entry(
     hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
 ) -> None:
     """Set up Dyson vacuum from a config entry."""
-    device = hass.data[DOMAIN][config_entry.entry_id]
+    device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     entity = Dyson360EyeEntity(device)
     async_add_entities([entity])
 

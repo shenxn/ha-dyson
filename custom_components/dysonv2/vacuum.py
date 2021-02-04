@@ -3,7 +3,7 @@
 from typing import Callable, List
 from homeassistant.const import STATE_PAUSED
 from libdyson.dyson_360_eye import Dyson360EyeState, Dyson360EyePowerMode
-from homeassistant.components.vacuum import STATE_CLEANING, STATE_DOCKED, STATE_ERROR, STATE_RETURNING, SUPPORT_BATTERY, SUPPORT_FAN_SPEED, SUPPORT_PAUSE, SUPPORT_RETURN_HOME, SUPPORT_START, SUPPORT_STATE, SUPPORT_STATUS, SUPPORT_TURN_ON, StateVacuumEntity
+from homeassistant.components.vacuum import ATTR_STATUS, STATE_CLEANING, STATE_DOCKED, STATE_ERROR, STATE_RETURNING, SUPPORT_BATTERY, SUPPORT_FAN_SPEED, SUPPORT_PAUSE, SUPPORT_RETURN_HOME, SUPPORT_START, SUPPORT_STATE, SUPPORT_STATUS, SUPPORT_TURN_ON, StateVacuumEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -102,6 +102,11 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
     def supported_features(self) -> int:
         """Flag vacuum cleaner robot features that are supported."""
         return SUPPORT_360_EYE
+
+    @property
+    def device_state_attributes(self) -> dict:
+        """Expose the status to state attributes."""
+        return {ATTR_STATUS: self.status}
 
     def start(self) -> None:
         self._device.start()

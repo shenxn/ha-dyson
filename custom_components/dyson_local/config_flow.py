@@ -10,7 +10,8 @@ import voluptuous as vol
 from libdyson.dyson_360_eye import Dyson360Eye
 from libdyson.discovery import DysonDiscovery
 from libdyson.const import DEVICE_TYPE_360_EYE
-from libdyson.exceptions import DysonException
+from libdyson.exceptions import DysonException, DysonInvalidCredential
+from voluptuous.error import Invalid
 from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DOMAIN, DEVICE_TYPE_NAMES
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,13 +42,15 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             device_type = info[CONF_DEVICE_TYPE]
             device_type_name = DEVICE_TYPE_NAMES[device_type]
             try:
-                data = await self._async_try_connect(
+                data = await self._async_get_entry_data(
                     serial,
                     info[CONF_CREDENTIAL],
                     device_type,
                     device_type_name,
                     info.get(CONF_HOST),
                 )
+            except InvalidAuth:
+                errors["base"] = "invalid_auth"
             except CannotConnect:
                 errors["base"] = "cannot_connect"
             except CannotFind:
@@ -123,7 +126,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         device = Dyson360Eye(serial, credential)
 
         # Find device using discovery
-        if host is None:
+        if not host:
             discovered = threading.Event()
             def _callback(address: str) -> None:
                 _LOGGER.debug("Found device at %s", address)
@@ -146,6 +149,8 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # Try connect to the device
         try:
             device.connect(host)
+        except DysonInvalidCredential:
+            raise InvalidAuth
         except DysonException as err:
             _LOGGER.debug("Failed to connect to device: %s", err)
             raise CannotConnect
@@ -160,8 +165,12 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class CannotConnect(HomeAssistantError):
-    """Indicate connection failure."""
+    """Represents connection failure."""
 
 
 class CannotFind(HomeAssistantError):
-    """Indicate discovery failure."""
+    """Represents discovery failure."""
+
+
+class InvalidAuth(HomeAssistantError):
+    """Represents invalid authentication."""

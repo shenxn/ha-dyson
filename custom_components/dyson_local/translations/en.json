@@ -18,7 +18,8 @@
     },
     "error": {
       "cannot_connect": "Failed to connect",
-      "cannot_find": "Failed to find the device using discovery"
+      "cannot_find": "Failed to find the device using discovery",
+      "invalid_auth": "Invalid authentication"
     },
     "abort": {
       "already_configured": "Device already configured"

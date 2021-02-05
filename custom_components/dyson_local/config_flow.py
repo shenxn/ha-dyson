@@ -102,17 +102,17 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_cloud(self, device_info: DysonDeviceInfo):
+    async def async_step_discovery(self, info: DysonDeviceInfo):
         for entry in self._async_current_entries():
-            if entry.unique_id == device_info.serial:
+            if entry.unique_id == info.serial:
                 return self.async_abort(reason="already_configured")
-        await self.async_set_unique_id(device_info.serial)
+        await self.async_set_unique_id(info.serial)
         self._abort_if_unique_id_configured()
         self.context["title_placeholders"] = {
-            CONF_NAME: device_info.name,
-            CONF_SERIAL: device_info.serial,
+            CONF_NAME: info.name,
+            CONF_SERIAL: info.serial,
         }
-        self._device_info = device_info
+        self._device_info = info
         return await self.async_step_host()
 
     async def _async_get_entry_data(

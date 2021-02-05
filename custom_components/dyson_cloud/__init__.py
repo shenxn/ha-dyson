@@ -8,7 +8,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from libdyson.discovery import DysonDiscovery
 from libdyson.dyson_device import DysonDevice
 from libdyson.exceptions import DysonException, DysonNetworkError
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, SOURCE_DISCOVERY
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
@@ -42,7 +42,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.async_create_task(
             hass.config_entries.flow.async_init(
                 DYSON_LOCAL_DOMAIN,
-                context={"source": "cloud"},
+                context={"source": SOURCE_DISCOVERY},
                 data=device,
             )
         )

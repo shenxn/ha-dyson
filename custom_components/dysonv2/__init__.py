@@ -13,6 +13,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
+from homeassistant.components.zeroconf import async_get_instance
 from libdyson.dyson_360_eye import Dyson360Eye
 
 from .const import DATA_DEVICES, DATA_DISCOVERY, DOMAIN
@@ -69,7 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             discovery = DysonDiscovery()
             hass.data[DOMAIN][DATA_DISCOVERY] = discovery
             _LOGGER.debug("Starting dyson discovery")
-            discovery.start_discovery()
+            discovery.start_discovery(await async_get_instance(hass))
             def stop_discovery(_):
                 _LOGGER.debug("Stopping dyson discovery")
                 discovery.stop_discovery()

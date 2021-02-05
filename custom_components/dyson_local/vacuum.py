@@ -1,7 +1,7 @@
 """Vacuum platform for Dyson."""
 
 from typing import Callable, List
-from homeassistant.const import STATE_PAUSED
+from homeassistant.const import CONF_NAME, STATE_PAUSED
 from libdyson.dyson_360_eye import Dyson360EyeState, Dyson360EyePowerMode
 from homeassistant.components.vacuum import ATTR_STATUS, STATE_CLEANING, STATE_DOCKED, STATE_ERROR, STATE_RETURNING, SUPPORT_BATTERY, SUPPORT_FAN_SPEED, SUPPORT_PAUSE, SUPPORT_RETURN_HOME, SUPPORT_START, SUPPORT_STATE, SUPPORT_STATUS, SUPPORT_TURN_ON, StateVacuumEntity
 from homeassistant.config_entries import ConfigEntry
@@ -56,7 +56,7 @@ async def async_setup_entry(
 ) -> None:
     """Set up Dyson vacuum from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
-    entity = Dyson360EyeEntity(device)
+    entity = Dyson360EyeEntity(device, config_entry.data[CONF_NAME])
     async_add_entities([entity])
 
 

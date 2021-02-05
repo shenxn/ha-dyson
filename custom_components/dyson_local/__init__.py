@@ -8,7 +8,6 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from libdyson.discovery import DysonDiscovery
 from libdyson.dyson_device import DysonDevice
 from libdyson.exceptions import DysonException
-from custom_components.dysonv2.const import CONF_CREDENTIAL, CONF_SERIAL, DEVICE_TYPE_NAMES
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
@@ -16,7 +15,7 @@ from homeassistant.helpers.entity import Entity
 from homeassistant.components.zeroconf import async_get_instance
 from libdyson.dyson_360_eye import Dyson360Eye
 
-from .const import DATA_DEVICES, DATA_DISCOVERY, DOMAIN
+from .const import DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL, DEVICE_TYPE_NAMES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,8 +84,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 class DysonEntity(Entity):
 
-    def __init__(self, device: DysonDevice):
+    def __init__(self, device: DysonDevice, name: str):
         self._device = device
+        self._name = name
 
     async def async_added_to_hass(self) -> None:
         """Call when entity is added to hass."""
@@ -100,7 +100,7 @@ class DysonEntity(Entity):
     @property
     def name(self) -> str:
         """Return the name of the entity."""
-        return DEVICE_TYPE_NAMES[self._device.device_type]
+        return self._name
 
     @property
     def unique_id(self) -> str:

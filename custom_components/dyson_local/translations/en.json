@@ -1,5 +1,6 @@
 {
   "config": {
+    "flow_title": "Dyson: {name} ({serial})",
     "step": {
       "user": {
         "data": {
@@ -8,10 +9,16 @@
           "host": "Host",
           "device_type": "Device Type"
         }
+      },
+      "host": {
+        "data": {
+          "host": "Host"
+        }
       }
     },
     "error": {
-      "cannot_connect": "Cannot connect to the device"
+      "cannot_connect": "Failed to connect",
+      "cannot_find": "Failed to find the device using discovery"
     },
     "abort": {
       "already_configured": "Device already configured"

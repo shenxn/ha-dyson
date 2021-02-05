@@ -1,0 +1,20 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "data": {
+          "email": "Email",
+          "password": "Password",
+          "language": "Language"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect",
+      "invalid_auth": "Invalid authentication"
+    },
+    "abort": {
+      "already_configured": "Device already configured"
+    }
+  }
+}

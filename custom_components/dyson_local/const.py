@@ -1,6 +1,6 @@
 from libdyson.const import DEVICE_TYPE_360_EYE
 
-DOMAIN = "dysonv2"
+DOMAIN = "dyson_local"
 
 CONF_SERIAL = "serial"
 CONF_CREDENTIAL = "credential"

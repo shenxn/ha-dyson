@@ -82,6 +82,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload Dyson local."""
+    ok = all(
+        await asyncio.gather(
+            *[
+                hass.config_entries.async_forward_entry_unload(entry, component)
+                for component in PLATFORMS
+            ]
+        )
+    )
+    if ok:
+        device = hass.data[DOMAIN][DATA_DEVICES].pop(entry.entry_id)
+        await hass.async_add_executor_job(device.disconnect)
+        # TODO: stop discovery
+    return ok
+
+
 class DysonEntity(Entity):
 
     def __init__(self, device: DysonDevice, name: str):

@@ -14,6 +14,7 @@ from homeassistant.util.percentage import (
 )
 
 from libdyson import FanSpeed
+from libdyson.const import MessageType
 
 from . import DysonEntity, DOMAIN
 from .const import DATA_DEVICES
@@ -58,6 +59,8 @@ async def async_setup_entry(
 
 
 class DysonPureCoolLinkEntity(DysonEntity, FanEntity):
+
+    _MESSAGE_TYPE = MessageType.STATE
 
     @property
     def is_on(self) -> bool:

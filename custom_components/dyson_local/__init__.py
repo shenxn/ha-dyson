@@ -15,7 +15,7 @@ from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.components.zeroconf import async_get_instance
-from libdyson import Dyson360Eye, get_device
+from libdyson import Dyson360Eye, get_device, MessageType
 
 from .const import CONF_DEVICE_TYPE, DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL, DEVICE_TYPE_NAMES
 
@@ -48,6 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def setup_entry(host: str, is_discovery: bool=True) -> bool:
         try:
             device.connect(host)
+            # TODO: environmental state update
         except DysonException:
             if is_discovery:
                 _LOGGER.error(
@@ -113,13 +114,19 @@ def _async_get_platform(device: DysonDevice) -> List[str]:
 
 class DysonEntity(Entity):
 
+    _MESSAGE_TYPE = None
+
     def __init__(self, device: DysonDevice, name: str):
         self._device = device
         self._name = name
 
     async def async_added_to_hass(self) -> None:
         """Call when entity is added to hass."""
-        self._device.add_message_listener(self.schedule_update_ha_state)
+        self._device.add_message_listener(self._on_message)
+
+    def _on_message(self, message_type: MessageType) -> None:
+        if self._MESSAGE_TYPE is None or message_type == self._MESSAGE_TYPE:
+            self.schedule_update_ha_state()
 
     @property
     def should_poll(self) -> bool:
@@ -141,7 +148,7 @@ class DysonEntity(Entity):
         """Return device info of the entity."""
         return {
             "identifiers": {(DOMAIN, self._device.serial)},
-            "name": self.name,
+            "name": self._name,
             "manufacturer": "Dyson",
             "model": self._device.device_type,
         }

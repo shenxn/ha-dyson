@@ -1,11 +1,12 @@
 """Sensor platform for dyson."""
 
 from typing import Callable
-from homeassistant.const import ATTR_DEVICE_CLASS, ATTR_ICON, ATTR_NAME, ATTR_UNIT_OF_MEASUREMENT, CONF_NAME, TIME_HOURS
+from homeassistant.const import ATTR_DEVICE_CLASS, ATTR_ICON, ATTR_NAME, ATTR_UNIT_OF_MEASUREMENT, CONF_NAME, DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_TEMPERATURE, PERCENTAGE, STATE_OFF, TEMP_CELSIUS, TIME_HOURS
 from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import DEVICE_CLASS_BATTERY
 from homeassistant.config_entries import ConfigEntry
 from libdyson import DysonDevice, Dyson360Eye
+from libdyson.const import MessageType
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
@@ -18,7 +19,17 @@ SENSORS = {
     "filter_life": ("Filter Life", {
         ATTR_ICON: "mdi:filter-outline",
         ATTR_UNIT_OF_MEASUREMENT: TIME_HOURS,
-    })
+    }),
+    "humidity": ("Humidity", {
+        ATTR_DEVICE_CLASS: DEVICE_CLASS_HUMIDITY,
+        ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
+    }),
+    "temperature": ("Temperature", {
+        ATTR_DEVICE_CLASS: DEVICE_CLASS_TEMPERATURE,
+    }),
+    "dust": ("Dust", {
+        ATTR_ICON: "mdi:cloud"
+    }),
 }
 
 
@@ -31,7 +42,12 @@ async def async_setup_entry(
     if isinstance(device, Dyson360Eye):
         sensors.append(DysonBatterySensor)
     else:
-        sensors.append(DysonFilterLifeSensor)
+        sensors = [
+            DysonFilterLifeSensor,
+            DysonHumiditySensor,
+            DysonTemperatureSensor,
+            DysonDustSensor,
+        ]
     entities = [
         sensor(device, config_entry.data[CONF_NAME])
         for sensor in sensors
@@ -76,6 +92,16 @@ class DysonSensor(DysonEntity):
         return self._attributes.get(ATTR_DEVICE_CLASS)
 
 
+class DysonSensorState(DysonSensor):
+
+    _MESSAGE_TYPE = MessageType.STATE
+
+
+class DysonSensorEnvironmental(DysonSensor):
+
+    _MESSAGE_TYPE = MessageType.ENVIRONMENTAL
+
+
 class DysonBatterySensor(DysonSensor):
 
     _SENSOR_TYPE = "battery_level"
@@ -86,7 +112,7 @@ class DysonBatterySensor(DysonSensor):
         return self._device.battery_level
 
 
-class DysonFilterLifeSensor(DysonSensor):
+class DysonFilterLifeSensor(DysonSensorState):
     """Dyson filter life sensor (in hours) for Pure Cool Link."""
 
     _SENSOR_TYPE = "filter_life"
@@ -95,3 +121,48 @@ class DysonFilterLifeSensor(DysonSensor):
     def state(self) -> int:
         """Return the state of the sensor."""
         return self._device.filter_life
+
+
+class DysonHumiditySensor(DysonSensorEnvironmental):
+    """Dyson humidity sensor."""
+
+    _SENSOR_TYPE = "humidity"
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        if self._device.humidity == -1:
+            return STATE_OFF
+        return self._device.humidity
+
+
+class DysonTemperatureSensor(DysonSensorEnvironmental):
+    """Dyson temperature sensor."""
+
+    _SENSOR_TYPE = "temperature"
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        temperature_kelvin = self._device.temperature
+        if temperature_kelvin == -1:
+            return STATE_OFF
+        if self.hass.config.units.temperature_unit == TEMP_CELSIUS:
+            return float(f"{(temperature_kelvin - 273.15):.1f}")
+        return float(f"{(temperature_kelvin * 9 / 5 - 459.67):.1f}")
+
+    @property
+    def unit_of_measurement(self):
+        """Return the unit the value is expressed in."""
+        return self.hass.config.units.temperature_unit
+
+
+class DysonDustSensor(DysonSensorEnvironmental):
+    """Dyson dust sensor."""
+
+    _SENSOR_TYPE = "dust"
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.dust

@@ -88,10 +88,6 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
     def fan_speed_list(self) -> List[str]:
         """Get the list of available fan speed steps of the vacuum cleaner."""
         return ["Quiet", "Max"]
-    @property
-    def device_state_attributes(self) -> dict:
-        """Return the specific state attributes of this vacuum cleaner."""
-        return {ATTR_POSITION: str(self._device.position)}
 
     @property
     def available(self) -> bool:
@@ -106,7 +102,10 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
     @property
     def device_state_attributes(self) -> dict:
         """Expose the status to state attributes."""
-        return {ATTR_STATUS: self.status}
+        return {
+            ATTR_POSITION: str(self._device.position),
+            ATTR_STATUS: self.status,
+        }
 
     def start(self) -> None:
         self._device.start()

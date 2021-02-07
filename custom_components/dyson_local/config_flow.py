@@ -7,10 +7,9 @@ from homeassistant.const import CONF_DEVICE, CONF_HOST, CONF_NAME
 from homeassistant.exceptions import HomeAssistantError
 from libdyson.dyson_account import DysonDeviceInfo
 import voluptuous as vol
-from libdyson.dyson_360_eye import Dyson360Eye
 from libdyson.discovery import DysonDiscovery
-from libdyson.const import DEVICE_TYPE_360_EYE
 from libdyson.exceptions import DysonException, DysonInvalidCredential
+from libdyson import get_device
 from voluptuous.error import Invalid
 from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DOMAIN, DEVICE_TYPE_NAMES
 
@@ -123,7 +122,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         name: str,
         host: Optional[str]=None,
     ) -> Optional[str]:
-        device = Dyson360Eye(serial, credential)
+        device = get_device(serial, credential, device_type)
 
         # Find device using discovery
         if not host:

@@ -3,23 +3,23 @@
 import asyncio
 import logging
 from functools import partial
+from typing import List
 
 from homeassistant.exceptions import ConfigEntryNotReady
 from libdyson.discovery import DysonDiscovery
+from libdyson.dyson_account import DysonDeviceInfo
 from libdyson.dyson_device import DysonDevice
 from libdyson.exceptions import DysonException
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.components.zeroconf import async_get_instance
-from libdyson.dyson_360_eye import Dyson360Eye
+from libdyson import Dyson360Eye, get_device
 
-from .const import DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL, DEVICE_TYPE_NAMES
+from .const import CONF_DEVICE_TYPE, DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL, DEVICE_TYPE_NAMES
 
 _LOGGER = logging.getLogger(__name__)
-
-PLATFORMS = ["binary_sensor", "sensor", "vacuum"]
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -33,10 +33,14 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Dyson from a config entry."""
-    device = Dyson360Eye(entry.data[CONF_SERIAL], entry.data[CONF_CREDENTIAL])
+    device = get_device(
+        entry.data[CONF_SERIAL],
+        entry.data[CONF_CREDENTIAL],
+        entry.data[CONF_DEVICE_TYPE],
+    )
 
     async def _async_forward_entry_setup():
-        for component in PLATFORMS:
+        for component in _async_get_platform(device):
             hass.async_create_task(
                 hass.config_entries.async_forward_entry_setup(entry, component)
             )
@@ -84,19 +88,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Dyson local."""
+    device = hass.data[DOMAIN][DATA_DEVICES][entry.entry_id]
     ok = all(
         await asyncio.gather(
             *[
                 hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in PLATFORMS
+                for component in _async_get_platform(device)
             ]
         )
     )
     if ok:
-        device = hass.data[DOMAIN][DATA_DEVICES].pop(entry.entry_id)
+        hass.data[DOMAIN][DATA_DEVICES].pop(entry.entry_id)
         await hass.async_add_executor_job(device.disconnect)
         # TODO: stop discovery
     return ok
+
+
+@callback
+def _async_get_platform(device: DysonDevice) -> List[str]:
+    if isinstance(device, Dyson360Eye):
+        return ["binary_sensor", "sensor", "vacuum"]
+    return ["fan"]
 
 
 class DysonEntity(Entity):

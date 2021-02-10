@@ -16,6 +16,7 @@ from .const import DATA_COORDINATORS, DATA_DEVICES, DOMAIN
 SENSORS = {
     "battery_level": ("Battery Level", {
         ATTR_DEVICE_CLASS: DEVICE_CLASS_BATTERY,
+        ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
     }),
     "filter_life": ("Filter Life", {
         ATTR_ICON: "mdi:filter-outline",

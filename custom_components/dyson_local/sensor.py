@@ -28,9 +28,6 @@ SENSORS = {
     "temperature": ("Temperature", {
         ATTR_DEVICE_CLASS: DEVICE_CLASS_TEMPERATURE,
     }),
-    "particulars": ("Particulars", {
-        ATTR_ICON: "mdi:cloud"
-    }),
 }
 
 
@@ -50,7 +47,6 @@ async def async_setup_entry(
             DysonFilterLifeSensor(device, name),
             DysonHumiditySensor(coordinator, device, name),
             DysonTemperatureSensor(coordinator, device, name),
-            DysonParticularsSensor(coordinator, device, name),
         ]
     async_add_entities(entities)
 
@@ -155,14 +151,3 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
     def unit_of_measurement(self):
         """Return the unit the value is expressed in."""
         return self.hass.config.units.temperature_unit
-
-
-class DysonParticularsSensor(DysonSensorEnvironmental):
-    """Dyson particulars sensor."""
-
-    _SENSOR_TYPE = "particulars"
-
-    @property
-    def state(self) -> int:
-        """Return the state of the sensor."""
-        return self._device.particulars

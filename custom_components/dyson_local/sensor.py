@@ -65,9 +65,9 @@ class DysonSensor(DysonEntity):
         self._sensor_name, self._attributes = SENSORS[self._SENSOR_TYPE]
 
     @property
-    def name(self):
+    def sub_name(self):
         """Return the name of the Dyson sensor."""
-        return f"{super().name} {self._sensor_name}"
+        return self._sensor_name
 
     @property
     def unique_id(self):

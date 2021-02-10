@@ -4,7 +4,7 @@ import asyncio
 from datetime import timedelta
 import logging
 from functools import partial
-from typing import List
+from typing import List, Optional
 
 from homeassistant.exceptions import ConfigEntryNotReady
 from libdyson.discovery import DysonDiscovery
@@ -166,7 +166,14 @@ class DysonEntity(Entity):
     @property
     def name(self) -> str:
         """Return the name of the entity."""
-        return self._name
+        if self.sub_name is None:
+            return self._name
+        return f"{self._name} {self.sub_name}"
+
+    @property
+    def sub_name(self) -> Optional[str]:
+        """Return sub name of the entity."""
+        return None
 
     @property
     def unique_id(self) -> str:

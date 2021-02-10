@@ -22,9 +22,9 @@ class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
     """Dyson fan night mode switch."""
 
     @property
-    def name(self):
+    def sub_name(self):
         """Return the name of the entity."""
-        return f"{super().name} Night Mode"
+        return "Night Mode"
 
     @property
     def icon(self):

@@ -32,6 +32,6 @@ class Dyson360EyeBatteryChargingSensor(DysonEntity, BinarySensorEntity):
         return DEVICE_CLASS_BATTERY_CHARGING
 
     @property
-    def name(self) -> str:
+    def sub_name(self) -> str:
         """Return the name of the sensor."""
-        return f"{super().name} Battery Charging"
+        return "Battery Charging"

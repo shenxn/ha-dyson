@@ -35,9 +35,9 @@ class DysonAirQualityEntity(CoordinatorEntity, DysonEntity, AirQualityEntity):
         DysonEntity.__init__(self, device, name)
 
     @property
-    def name(self):
+    def sub_name(self):
         """Return the name of the air quality entity."""
-        return f"{super().name} Air Quality"
+        return "Air Quality"
 
     @property
     def particulate_matter_2_5(self):

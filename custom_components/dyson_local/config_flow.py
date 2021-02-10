@@ -5,7 +5,7 @@ from homeassistant import config_entries
 from homeassistant.components.zeroconf import async_get_instance
 from homeassistant.const import CONF_DEVICE, CONF_HOST, CONF_NAME
 from homeassistant.exceptions import HomeAssistantError
-from libdyson.dyson_account import DysonDeviceInfo
+from libdyson.cloud import DysonDeviceInfo
 import voluptuous as vol
 from libdyson.discovery import DysonDiscovery
 from libdyson.exceptions import DysonException, DysonInvalidCredential

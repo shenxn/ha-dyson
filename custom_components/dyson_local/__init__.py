@@ -8,7 +8,6 @@ from typing import List, Optional
 
 from homeassistant.exceptions import ConfigEntryNotReady
 from libdyson.discovery import DysonDiscovery
-from libdyson.dyson_account import DysonDeviceInfo
 from libdyson.dyson_device import DysonDevice
 from libdyson.exceptions import DysonException
 from homeassistant.config_entries import ConfigEntry

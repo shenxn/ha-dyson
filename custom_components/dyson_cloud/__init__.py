@@ -5,26 +5,29 @@ import logging
 from functools import partial
 
 from homeassistant.exceptions import ConfigEntryNotReady
+from libdyson.cloud.device_info import DysonDeviceInfo
+from libdyson.const import DEVICE_TYPE_360_EYE
 from libdyson.discovery import DysonDiscovery
 from libdyson.dyson_device import DysonDevice
 from libdyson.exceptions import DysonException, DysonNetworkError
 from homeassistant.config_entries import ConfigEntry, SOURCE_DISCOVERY
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
 from homeassistant.components.zeroconf import async_get_instance
 from libdyson.cloud import DysonAccount
 from custom_components.dyson_local import DOMAIN as DYSON_LOCAL_DOMAIN
 
-from .const import CONF_AUTH, CONF_LANGUAGE, DOMAIN
+from .const import CONF_AUTH, CONF_LANGUAGE, DATA_ACCOUNT, DATA_DEVICES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = []
+PLATFORMS = ["camera"]
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up Dyson integration."""
+    hass.data[DOMAIN] = {}
     return True
 
 
@@ -45,6 +48,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 context={"source": SOURCE_DISCOVERY},
                 data=device,
             )
+        )
+
+    hass.data[DOMAIN][entry.entry_id] = {
+        DATA_ACCOUNT: account,
+        DATA_DEVICES: devices,
+    }
+    for component in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, component)
         )
 
     return True

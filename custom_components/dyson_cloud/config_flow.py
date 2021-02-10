@@ -5,7 +5,7 @@ from homeassistant import config_entries
 from homeassistant.components.zeroconf import async_get_instance
 from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD, CONF_USERNAME
 import voluptuous as vol
-from libdyson.dyson_account import DysonAccount
+from libdyson.cloud import DysonAccount
 from libdyson.dyson_360_eye import Dyson360Eye
 from libdyson.discovery import DysonDiscovery
 from libdyson.const import DEVICE_TYPE_360_EYE

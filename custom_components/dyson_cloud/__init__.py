@@ -13,7 +13,7 @@ from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import Entity
 from homeassistant.components.zeroconf import async_get_instance
-from libdyson.dyson_account import DysonAccount
+from libdyson.cloud import DysonAccount
 from custom_components.dyson_local import DOMAIN as DYSON_LOCAL_DOMAIN
 
 from .const import CONF_AUTH, CONF_LANGUAGE, DOMAIN

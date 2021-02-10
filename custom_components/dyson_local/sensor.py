@@ -70,9 +70,9 @@ class DysonSensor(DysonEntity):
         return self._sensor_name
 
     @property
-    def unique_id(self):
+    def sub_unique_id(self):
         """Return the sensor's unique id."""
-        return f"{self._device.serial}-{self._SENSOR_TYPE}"
+        return self._SENSOR_TYPE
 
     @property
     def unit_of_measurement(self):

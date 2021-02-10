@@ -178,7 +178,14 @@ class DysonEntity(Entity):
     @property
     def unique_id(self) -> str:
         """Return the entity unique id."""
-        return self._device.serial
+        if self.sub_unique_id is None:
+            return self._device.serial
+        return f"{self._device.serial}-{self.sub_unique_id}"
+
+    @property
+    def sub_unique_id(self) -> str:
+        """Return the entity sub unique id."""
+        return None
 
     @property
     def device_info(self) -> dict:

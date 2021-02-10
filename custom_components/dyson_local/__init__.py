@@ -53,9 +53,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         async def async_update_data():
             """Poll environmental data from the device."""
             try:
-                await hass.async_add_executor_job(device.request_environmental_state)
+                await hass.async_add_executor_job(device.request_environmental_data)
             except DysonException as err:
-                raise UpdateFailed("Failed to request environmental state") from err
+                raise UpdateFailed("Failed to request environmental data") from err
 
         coordinator = DataUpdateCoordinator(
             hass,

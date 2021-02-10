@@ -1,6 +1,7 @@
 """Support for Dyson devices."""
 
 import asyncio
+from datetime import timedelta
 import logging
 from functools import partial
 from typing import List
@@ -14,18 +15,26 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
 from homeassistant.components.zeroconf import async_get_instance
 from libdyson import Dyson360Eye, get_device, MessageType
 
-from .const import CONF_DEVICE_TYPE, DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL, DEVICE_TYPE_NAMES
+from .const import CONF_DEVICE_TYPE, DATA_COORDINATORS, DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL, DEVICE_TYPE_NAMES
 
 _LOGGER = logging.getLogger(__name__)
+
+ENVIRONMENTAL_DATA_UPDATE_INTERVAL = timedelta(seconds=30)
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up Dyson integration."""
     hass.data[DOMAIN] = {
         DATA_DEVICES: {},
+        DATA_COORDINATORS: {},
         DATA_DISCOVERY: None,
     }
     return True
@@ -38,6 +47,26 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_CREDENTIAL],
         entry.data[CONF_DEVICE_TYPE],
     )
+    
+    if not isinstance(device, Dyson360Eye):
+        # Set up coordinator
+        async def async_update_data():
+            """Poll environmental data from the device."""
+            try:
+                await hass.async_add_executor_job(device.request_environmental_state)
+            except DysonException as err:
+                raise UpdateFailed("Failed to request environmental state") from err
+
+        coordinator = DataUpdateCoordinator(
+            hass,
+            _LOGGER,
+            name="environmental",
+            update_method=async_update_data,
+            update_interval=ENVIRONMENTAL_DATA_UPDATE_INTERVAL,
+        )
+    else:
+        coordinator = None
+
 
     async def _async_forward_entry_setup():
         for component in _async_get_platform(device):
@@ -48,7 +77,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def setup_entry(host: str, is_discovery: bool=True) -> bool:
         try:
             device.connect(host)
-            # TODO: environmental state update
         except DysonException:
             if is_discovery:
                 _LOGGER.error(
@@ -59,6 +87,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 return
             raise ConfigEntryNotReady
         hass.data[DOMAIN][DATA_DEVICES][entry.entry_id] = device
+        hass.data[DOMAIN][DATA_COORDINATORS][entry.entry_id] = coordinator
         asyncio.run_coroutine_threadsafe(
             _async_forward_entry_setup(), hass.loop
         ).result()
@@ -100,6 +129,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
     if ok:
         hass.data[DOMAIN][DATA_DEVICES].pop(entry.entry_id)
+        hass.data[DOMAIN][DATA_COORDINATORS].pop(entry.entry_id)
         await hass.async_add_executor_job(device.disconnect)
         # TODO: stop discovery
     return ok
@@ -114,7 +144,7 @@ def _async_get_platform(device: DysonDevice) -> List[str]:
 
 class DysonEntity(Entity):
 
-    _MESSAGE_TYPE = None
+    _MESSAGE_TYPE = MessageType.STATE
 
     def __init__(self, device: DysonDevice, name: str):
         self._device = device

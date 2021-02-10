@@ -5,11 +5,12 @@ from homeassistant.const import ATTR_DEVICE_CLASS, ATTR_ICON, ATTR_NAME, ATTR_UN
 from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import DEVICE_CLASS_BATTERY
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
 from libdyson import DysonDevice, Dyson360Eye
 from libdyson.const import MessageType
 
 from . import DysonEntity
-from .const import DATA_DEVICES, DOMAIN
+from .const import DATA_COORDINATORS, DATA_DEVICES, DOMAIN
 
 
 SENSORS = {
@@ -38,26 +39,26 @@ async def async_setup_entry(
 ) -> None:
     """Set up Dyson sensor from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
-    sensors = []
+    name = config_entry.data[CONF_NAME]
     if isinstance(device, Dyson360Eye):
-        sensors.append(DysonBatterySensor)
-    else:
-        sensors = [
-            DysonFilterLifeSensor,
-            DysonHumiditySensor,
-            DysonTemperatureSensor,
-            DysonParticularsSensor,
+        entities = [
+            DysonBatterySensor(device, name)
         ]
-    entities = [
-        sensor(device, config_entry.data[CONF_NAME])
-        for sensor in sensors
-    ]
+    else:
+        coordinator = hass.data[DOMAIN][DATA_COORDINATORS][config_entry.entry_id]
+        entities = [
+            DysonFilterLifeSensor(device, name),
+            DysonHumiditySensor(coordinator, device, name),
+            DysonTemperatureSensor(coordinator, device, name),
+            DysonParticularsSensor(coordinator, device, name),
+        ]
     async_add_entities(entities)
 
 
 class DysonSensor(DysonEntity):
     """Generic Dyson sensor."""
 
+    _MESSAGE_TYPE = MessageType.ENVIRONMENTAL
     _SENSOR_TYPE = None
 
     def __init__(self, device: DysonDevice, name: str):
@@ -92,14 +93,13 @@ class DysonSensor(DysonEntity):
         return self._attributes.get(ATTR_DEVICE_CLASS)
 
 
-class DysonSensorState(DysonSensor):
-
-    _MESSAGE_TYPE = MessageType.STATE
-
-
-class DysonSensorEnvironmental(DysonSensor):
+class DysonSensorEnvironmental(CoordinatorEntity, DysonSensor):
 
     _MESSAGE_TYPE = MessageType.ENVIRONMENTAL
+
+    def __init__(self, coordinator: DataUpdateCoordinator, device: DysonDevice, name: str):
+        CoordinatorEntity.__init__(self, coordinator)
+        DysonSensor.__init__(self, device, name)
 
 
 class DysonBatterySensor(DysonSensor):
@@ -112,7 +112,7 @@ class DysonBatterySensor(DysonSensor):
         return self._device.battery_level
 
 
-class DysonFilterLifeSensor(DysonSensorState):
+class DysonFilterLifeSensor(DysonSensor):
     """Dyson filter life sensor (in hours) for Pure Cool Link."""
 
     _SENSOR_TYPE = "filter_life"

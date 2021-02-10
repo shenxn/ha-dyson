@@ -18,7 +18,7 @@ ATTR_VOC = "volatile_organic_compounds"
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
 ) -> None:
-    """Set up Dyson sensor from a config entry."""
+    """Set up Dyson air quality from a config entry."""
     coordinator = hass.data[DOMAIN][DATA_COORDINATORS][config_entry.entry_id]
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]

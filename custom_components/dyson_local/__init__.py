@@ -139,7 +139,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 def _async_get_platform(device: DysonDevice) -> List[str]:
     if isinstance(device, Dyson360Eye):
         return ["binary_sensor", "sensor", "vacuum"]
-    return ["air_quality", "fan", "sensor"]
+    return ["air_quality", "fan", "sensor", "switch"]
 
 
 class DysonEntity(Entity):

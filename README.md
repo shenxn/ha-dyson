@@ -1,4 +1,4 @@
-# HomeAssitant Custom Integration for Dyson
+# HomeAssistant Custom Integration for Dyson
 
 This custom integration is still under development.
 

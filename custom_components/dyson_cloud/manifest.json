@@ -7,5 +7,5 @@
     "issue_tracker": "https://github.com/shenxn/ha-dyson/issues",
     "dependencies": [],
     "codeowners": ["@shenxn"],
-    "requirements": ["libdyson==0.2.0"]
+    "requirements": ["libdyson==0.3.0"]
 }

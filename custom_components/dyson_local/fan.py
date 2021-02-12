@@ -10,7 +10,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform, config_validation as cv
 
-from libdyson import FanSpeed
 from libdyson.const import MessageType
 
 from . import DysonEntity, DOMAIN
@@ -36,37 +35,25 @@ SET_DYSON_SPEED_SCHEMA = {
 
 SPEED_LIST_HA = [SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
 
-SPEED_LIST_DYSON = [
-    int(FanSpeed.SPEED_1.value),
-    int(FanSpeed.SPEED_2.value),
-    int(FanSpeed.SPEED_3.value),
-    int(FanSpeed.SPEED_4.value),
-    int(FanSpeed.SPEED_5.value),
-    int(FanSpeed.SPEED_6.value),
-    int(FanSpeed.SPEED_7.value),
-    int(FanSpeed.SPEED_8.value),
-    int(FanSpeed.SPEED_9.value),
-    int(FanSpeed.SPEED_10.value),
-]
+SPEED_LIST_DYSON = list(range(1, 11))
 
 SPEED_DYSON_TO_HA = {
-    FanSpeed.SPEED_1: SPEED_LOW,
-    FanSpeed.SPEED_2: SPEED_LOW,
-    FanSpeed.SPEED_3: SPEED_LOW,
-    FanSpeed.SPEED_4: SPEED_LOW,
-    FanSpeed.SPEED_AUTO: SPEED_MEDIUM,
-    FanSpeed.SPEED_5: SPEED_MEDIUM,
-    FanSpeed.SPEED_6: SPEED_MEDIUM,
-    FanSpeed.SPEED_7: SPEED_MEDIUM,
-    FanSpeed.SPEED_8: SPEED_HIGH,
-    FanSpeed.SPEED_9: SPEED_HIGH,
-    FanSpeed.SPEED_10: SPEED_HIGH,
+    1: SPEED_LOW,
+    2: SPEED_LOW,
+    3: SPEED_LOW,
+    4: SPEED_LOW,
+    5: SPEED_MEDIUM,
+    6: SPEED_MEDIUM,
+    7: SPEED_MEDIUM,
+    8: SPEED_HIGH,
+    9: SPEED_HIGH,
+    10: SPEED_HIGH,
 }
 
 SPEED_HA_TO_DYSON = {
-    SPEED_LOW: FanSpeed.SPEED_4,
-    SPEED_MEDIUM: FanSpeed.SPEED_7,
-    SPEED_HIGH: FanSpeed.SPEED_10,
+    SPEED_LOW: 4,
+    SPEED_MEDIUM: 7,
+    SPEED_HIGH: 10,
 }
 
 
@@ -83,7 +70,7 @@ async def async_setup_entry(
         SERVICE_SET_AUTO_MODE, SET_AUTO_MODE_SCHEMA, "set_auto_mode"
     )
     platform.async_register_entity_service(
-        SERVICE_SET_DYSON_SPEED, SET_DYSON_SPEED_SCHEMA, "service_set_dyson_speed"
+        SERVICE_SET_DYSON_SPEED, SET_DYSON_SPEED_SCHEMA, "set_dyson_speed"
     )
 
 
@@ -99,6 +86,8 @@ class DysonPureCoolLinkEntity(DysonEntity, FanEntity):
     @property
     def speed(self):
         """Return the current speed."""
+        if self._device.speed is None:
+            return None
         return SPEED_DYSON_TO_HA[self._device.speed]
 
     @property
@@ -109,9 +98,7 @@ class DysonPureCoolLinkEntity(DysonEntity, FanEntity):
     @property
     def dyson_speed(self):
         """Return the current speed."""
-        if self._device.speed == FanSpeed.SPEED_AUTO:
-            return "AUTO"
-        return int(self._device.speed.value)
+        return self._device.speed
 
     @property
     def dyson_speed_list(self) -> list:
@@ -177,17 +164,9 @@ class DysonPureCoolLinkEntity(DysonEntity, FanEntity):
         _LOGGER.debug("Set fan speed to: %s", speed)
         self.set_dyson_speed(SPEED_HA_TO_DYSON[speed])
 
-    def set_dyson_speed(self, speed: FanSpeed) -> None:
+    def set_dyson_speed(self, dyson_speed: int) -> None:
         """Set the exact speed of the fan."""
-        self._device.set_speed(speed)
-
-    def service_set_dyson_speed(self, dyson_speed: str) -> None:
-        """Handle the service to set dyson speed."""
-        if dyson_speed not in SPEED_LIST_DYSON:
-            raise ValueError(f'"{dyson_speed}" is not a valid Dyson speed')
-        _LOGGER.debug("Set exact speed to %s", dyson_speed)
-        speed = FanSpeed(f"{int(dyson_speed):04d}")
-        self.set_dyson_speed(speed)
+        self._device.set_speed(dyson_speed)
 
     def oscillate(self, oscillating: bool) -> None:
         """Turn on/of oscillation."""

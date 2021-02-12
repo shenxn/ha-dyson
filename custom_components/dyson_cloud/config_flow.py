@@ -4,20 +4,24 @@ from typing import Optional
 from homeassistant import config_entries
 from homeassistant.components.zeroconf import async_get_instance
 from homeassistant.const import CONF_EMAIL, CONF_HOST, CONF_PASSWORD, CONF_USERNAME
+from libdyson.cloud.account import DysonAccountCN
 import voluptuous as vol
-from libdyson.cloud import DysonAccount
+from libdyson.cloud import DysonAccount, REGIONS
 from libdyson.dyson_360_eye import Dyson360Eye
 from libdyson.discovery import DysonDiscovery
 from libdyson.const import DEVICE_TYPE_360_EYE
-from libdyson.exceptions import DysonException, DysonLoginFailure, DysonNetworkError
+from libdyson.exceptions import DysonException, DysonLoginFailure, DysonInvalidAccountStatus, DysonNetworkError, DysonOTPTooFrequently
 from voluptuous.schema_builder import Required
 
-from .const import CONF_AUTH, CONF_LANGUAGE, DOMAIN
+from .const import CONF_AUTH, CONF_REGION, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+CONF_MOBILE = "mobile"
+CONF_OTP = "otp"
 
 DISCOVERY_TIMEOUT = 10
+
 
 class DysonCloudConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Dyson cloud config flow."""
@@ -25,44 +29,124 @@ class DysonCloudConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
+    def __init__(self):
+        """Initialize the config flow."""
+        self._region = None
+        self._account = None
+        self._mobile = None
+        self._mobile_verify = None
+
     async def async_step_user(self, info: Optional[dict]):
+        if info is not None:
+            self._region = info[CONF_REGION]
+            if self._region == "CN":
+                return await self.async_step_mobile()
+            return await self.async_step_email()
+
+        region_names = {
+            code: f"{name} ({code})"
+            for code, name in REGIONS.items()
+        }
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema({
+                vol.Required(CONF_REGION): vol.In(region_names)
+            }),
+        )
+
+
+    async def async_step_email(self, info: Optional[dict]=None):
         errors = {}
         if info is not None:
-            language = info[CONF_LANGUAGE]
             email = info[CONF_EMAIL]
-            unique_id = f"{language}_{email}"
+            unique_id = f"global_{email}"
             for entry in self._async_current_entries():
                 if entry.unique_id == unique_id:
                     return self.async_abort(reason="already_configured")
             await self.async_set_unique_id(unique_id)
             self._abort_if_unique_id_configured()
 
-            account = DysonAccount(language)
+            account = DysonAccount()
             try:
-                await self.hass.async_add_executor_job(
-                    account.login, email, info[CONF_PASSWORD]
+                auth_info = await self.hass.async_add_executor_job(
+                    account.login_email_password,
+                    email,
+                    info[CONF_PASSWORD],
+                    self._region,
                 )
             except DysonNetworkError:
                 errors["base"] = "cannot_connect"
-            except DysonLoginFailure:
+            except (DysonInvalidAccountStatus, DysonLoginFailure):
                 errors["base"] = "invalid_auth"
             else:
                 return self.async_create_entry(
-                    title=f"{email} ({language})",
+                    title=f"{email} ({self._region})",
                     data={
-                        CONF_LANGUAGE: language,
-                        CONF_AUTH: account.auth_info,
+                        CONF_REGION: self._region,
+                        CONF_AUTH: auth_info,
                     }
                 )
-            
 
         info = info or {}
         return self.async_show_form(
-            step_id="user",
+            step_id="email",
             data_schema=vol.Schema({
                 vol.Required(CONF_EMAIL, default=info.get(CONF_EMAIL, "")): str,
                 vol.Required(CONF_PASSWORD, default=info.get(CONF_PASSWORD, "")): str,
-                vol.Required(CONF_LANGUAGE, default=info.get(CONF_LANGUAGE, "")): str,
+            }),
+            errors=errors,
+        )
+
+
+    async def async_step_mobile(self, info: Optional[dict]=None):
+        errors = {}
+        if info is not None:
+            account = DysonAccountCN()
+            mobile = info[CONF_MOBILE]
+            if not mobile.startswith("+"):
+                mobile = f"+86{mobile}"
+            try:
+                self._mobile_verify = await self.hass.async_add_executor_job(
+                    account.login_mobile_otp, mobile
+                )
+            except DysonOTPTooFrequently:
+                errors["base"] = "otp_too_frequent"
+            else:
+                self._mobile = mobile
+                return await self.async_step_otp()
+
+        info = info or {}
+        return self.async_show_form(
+            step_id="mobile",
+            data_schema=vol.Schema({
+                vol.Required(CONF_MOBILE, default=info.get(CONF_MOBILE, "")): str,
+            }),
+            errors=errors,
+        )
+
+    async def async_step_otp(self, info: Optional[dict]=None):
+        errors = {}
+        if info is not None:
+            try:
+                auth_info = await self.hass.async_add_executor_job(
+                    self._mobile_verify, info[CONF_OTP]
+                )
+            except DysonLoginFailure:
+                errors["base"] = "invalid_otp"
+            else:
+                return self.async_create_entry(
+                    title=f"{self._mobile} ({self._region})",
+                    data={
+                        CONF_REGION: self._region,
+                        CONF_AUTH: auth_info,
+                    }
+                )
+
+
+        return self.async_show_form(
+            step_id="otp",
+            data_schema=vol.Schema({
+                vol.Required(CONF_OTP): str,
             }),
             errors=errors,
         )

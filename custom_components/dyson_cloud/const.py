@@ -1,6 +1,6 @@
 DOMAIN = "dyson_cloud"
 
-CONF_LANGUAGE = "language"
+CONF_REGION = "region"
 CONF_AUTH = "auth"
 
 DATA_ACCOUNT = "account"

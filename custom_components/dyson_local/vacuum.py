@@ -2,7 +2,7 @@
 
 from typing import Callable, List
 from homeassistant.const import CONF_NAME, STATE_PAUSED
-from libdyson.dyson_360_eye import Dyson360EyeState, Dyson360EyePowerMode
+from libdyson.dyson_360_eye import VacuumState, VacuumPowerMode
 from homeassistant.components.vacuum import ATTR_STATUS, STATE_CLEANING, STATE_DOCKED, STATE_ERROR, STATE_RETURNING, SUPPORT_BATTERY, SUPPORT_FAN_SPEED, SUPPORT_PAUSE, SUPPORT_RETURN_HOME, SUPPORT_START, SUPPORT_STATE, SUPPORT_STATUS, SUPPORT_TURN_ON, StateVacuumEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -21,31 +21,73 @@ SUPPORT_360_EYE = (
 )
 
 DYSON_STATUS = {
-    Dyson360EyeState.INACTIVE_CHARGING: "Stopped - Charging",
-    Dyson360EyeState.INACTIVE_CHARGED: "Stopped - Charged",
-    Dyson360EyeState.FULL_CLEAN_PAUSED: "Paused",
-    Dyson360EyeState.FULL_CLEAN_RUNNING: "Cleaning",
-    Dyson360EyeState.FULL_CLEAN_ABORTED: "Returning home",
-    Dyson360EyeState.FULL_CLEAN_INITIATED: "Start cleaning",
-    Dyson360EyeState.FULL_CLEAN_FINISHED: "Finished",
-    Dyson360EyeState.FULL_CLEAN_NEEDS_CHARGE: "Need charging",
-    Dyson360EyeState.FULL_CLEAN_CHARGING: "Charging",
-    Dyson360EyeState.FAULT_USER_RECOVERABLE: "Error - device blocked",
-    Dyson360EyeState.FAULT_REPLACE_ON_DOCK: "Error - Replace device on dock",
+    VacuumState.FAULT_CALL_HELPLINE: "Error: Call helpline",
+    VacuumState.FAULT_CONTACT_HELPLINE: "Error: Contact helpline",
+    VacuumState.FAULT_CRITICAL: "Error: Critical",
+    VacuumState.FAULT_GETTING_INFO: "Error: Getting info",
+    VacuumState.FAULT_LOST: "Error: Lost",
+    VacuumState.FAULT_ON_DOCK: "Error: On dock",
+    VacuumState.FAULT_ON_DOCK_CHARGED: "Error: On dock charged",
+    VacuumState.FAULT_ON_DOCK_CHARGING: "Error: On dock charging",
+    VacuumState.FAULT_REPLACE_ON_DOCK: "Error: Replace device on dock",
+    VacuumState.FAULT_RETURN_TO_DOCK: "Error: Return to dock",
+    VacuumState.FAULT_RUNNING_DIAGNOSTIC: "Error: Running diagnostic",
+    VacuumState.FAULT_USER_RECOVERABLE: "Error: Blocked",
+    VacuumState.FULL_CLEAN_ABANDONED: "Abandoned",
+    VacuumState.FULL_CLEAN_ABORTED: "Returning home",
+    VacuumState.FULL_CLEAN_CHARGING: "Charging",
+    VacuumState.FULL_CLEAN_DISCOVERING: "Discovering",
+    VacuumState.FULL_CLEAN_FINISHED: "Finished",
+    VacuumState.FULL_CLEAN_INITIATED: "Initiated",
+    VacuumState.FULL_CLEAN_NEEDS_CHARGE: "Need charging",
+    VacuumState.FULL_CLEAN_PAUSED: "Paused",
+    VacuumState.FULL_CLEAN_RUNNING: "Cleaning",
+    VacuumState.FULL_CLEAN_TRAVERSING: "Traversing",
+    VacuumState.INACTIVE_CHARGED: "Stopped - Charged",
+    VacuumState.INACTIVE_CHARGING: "Stopped - Charging",
+    VacuumState.INACTIVE_DISCHARGING: "Stopped - Discharging",
+    VacuumState.MAPPING_ABORTED: "Mapping - Returning home",
+    VacuumState.MAPPING_CHARGING: "Mapping - Charging",
+    VacuumState.MAPPING_FINISHED: "Mapping - Finished",
+    VacuumState.MAPPING_INITIATED: "Mapping - Initiated",
+    VacuumState.MAPPING_NEEDS_CHARGE: "Mapping - Needs charging",
+    VacuumState.MAPPING_PAUSED: "Mapping - Paused",
+    VacuumState.MAPPING_RUNNING: "Mapping - Running",
 }
 
 DYSON_STATES = {
-    Dyson360EyeState.INACTIVE_CHARGING: STATE_DOCKED,
-    Dyson360EyeState.INACTIVE_CHARGED: STATE_DOCKED,
-    Dyson360EyeState.FULL_CLEAN_PAUSED: STATE_PAUSED,
-    Dyson360EyeState.FULL_CLEAN_RUNNING: STATE_CLEANING,
-    Dyson360EyeState.FULL_CLEAN_ABORTED: STATE_RETURNING,
-    Dyson360EyeState.FULL_CLEAN_INITIATED: STATE_CLEANING,
-    Dyson360EyeState.FULL_CLEAN_FINISHED: STATE_DOCKED,
-    Dyson360EyeState.FULL_CLEAN_NEEDS_CHARGE: STATE_RETURNING,
-    Dyson360EyeState.FULL_CLEAN_CHARGING: STATE_PAUSED,
-    Dyson360EyeState.FAULT_USER_RECOVERABLE: STATE_ERROR,
-    Dyson360EyeState.FAULT_REPLACE_ON_DOCK: STATE_ERROR,
+    VacuumState.FAULT_CALL_HELPLINE: STATE_ERROR,
+    VacuumState.FAULT_CONTACT_HELPLINE: STATE_ERROR,
+    VacuumState.FAULT_CRITICAL: STATE_ERROR,
+    VacuumState.FAULT_GETTING_INFO: STATE_ERROR,
+    VacuumState.FAULT_LOST: STATE_ERROR,
+    VacuumState.FAULT_ON_DOCK: STATE_ERROR,
+    VacuumState.FAULT_ON_DOCK_CHARGED: STATE_ERROR,
+    VacuumState.FAULT_ON_DOCK_CHARGING: STATE_ERROR,
+    VacuumState.FAULT_REPLACE_ON_DOCK: STATE_ERROR,
+    VacuumState.FAULT_RETURN_TO_DOCK: STATE_ERROR,
+    VacuumState.FAULT_RUNNING_DIAGNOSTIC: STATE_ERROR,
+    VacuumState.FAULT_USER_RECOVERABLE: STATE_ERROR,
+    VacuumState.FULL_CLEAN_ABANDONED: STATE_RETURNING,
+    VacuumState.FULL_CLEAN_ABORTED: STATE_RETURNING,
+    VacuumState.FULL_CLEAN_CHARGING: STATE_DOCKED,
+    VacuumState.FULL_CLEAN_DISCOVERING: STATE_CLEANING,
+    VacuumState.FULL_CLEAN_FINISHED: STATE_DOCKED,
+    VacuumState.FULL_CLEAN_INITIATED: STATE_CLEANING,
+    VacuumState.FULL_CLEAN_NEEDS_CHARGE: STATE_RETURNING,
+    VacuumState.FULL_CLEAN_PAUSED: STATE_PAUSED,
+    VacuumState.FULL_CLEAN_RUNNING: STATE_CLEANING,
+    VacuumState.FULL_CLEAN_TRAVERSING: STATE_CLEANING,
+    VacuumState.INACTIVE_CHARGED: STATE_DOCKED,
+    VacuumState.INACTIVE_CHARGING: STATE_DOCKED,
+    VacuumState.INACTIVE_DISCHARGING: STATE_DOCKED,
+    VacuumState.MAPPING_ABORTED: STATE_RETURNING,
+    VacuumState.MAPPING_CHARGING: STATE_PAUSED,
+    VacuumState.MAPPING_FINISHED: STATE_CLEANING,
+    VacuumState.MAPPING_INITIATED: STATE_CLEANING,
+    VacuumState.MAPPING_NEEDS_CHARGE: STATE_RETURNING,
+    VacuumState.MAPPING_PAUSED: STATE_PAUSED,
+    VacuumState.MAPPING_RUNNING: STATE_CLEANING,
 }
 
 ATTR_POSITION = "position"
@@ -79,7 +121,7 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
     def fan_speed(self) -> str:
         """Return the fan speed of the vacuum cleaner."""
         fan_speed = (
-            "Max" if self._device.power_mode == Dyson360EyePowerMode.MAX
+            "Max" if self._device.power_mode == VacuumPowerMode.MAX
             else "Quiet"
         )
         return fan_speed
@@ -119,7 +161,7 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
     def set_fan_speed(self, fan_speed: str, **kwargs) -> None:
         """Set fan speed."""
         power_mode = (
-            Dyson360EyePowerMode.MAX if fan_speed == "Max"
-            else Dyson360EyePowerMode.QUIET
+            VacuumPowerMode.MAX if fan_speed == "Max"
+            else VacuumPowerMode.QUIET
         )
         self._device.set_power_mode(power_mode)

@@ -22,7 +22,7 @@ from homeassistant.helpers.update_coordinator import (
 from homeassistant.components.zeroconf import async_get_instance
 from libdyson import Dyson360Eye, get_device, MessageType
 
-from .const import CONF_DEVICE_TYPE, DATA_COORDINATORS, DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL, DEVICE_TYPE_NAMES
+from .const import CONF_DEVICE_TYPE, DATA_COORDINATORS, DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL
 
 _LOGGER = logging.getLogger(__name__)
 

@@ -9,9 +9,9 @@ from libdyson.cloud import DysonDeviceInfo
 import voluptuous as vol
 from libdyson.discovery import DysonDiscovery
 from libdyson.exceptions import DysonException, DysonInvalidCredential
-from libdyson import get_device
+from libdyson import get_device, DEVICE_TYPE_NAMES
 from voluptuous.error import Invalid
-from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DOMAIN, DEVICE_TYPE_NAMES
+from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 

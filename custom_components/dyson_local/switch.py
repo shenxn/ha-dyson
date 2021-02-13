@@ -48,11 +48,11 @@ class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
 
     def turn_on(self):
         """Turn on night mode."""
-        return self._device.set_night_mode(True)
+        return self._device.enable_night_mode()
 
     def turn_off(self):
         """Turn off night mode."""
-        return self._device.set_night_mode(False)
+        return self._device.disable_night_mode()
 
 
 class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
@@ -80,8 +80,8 @@ class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
 
     def turn_on(self):
         """Turn on continuous monitoring."""
-        return self._device.set_continuous_monitoring(True)
+        return self._device.enable_continuous_monitoring()
 
     def turn_off(self):
         """Turn off continuous monitoring."""
-        return self._device.set_continuous_monitoring(False)
+        return self._device.disable_continuous_monitoring()

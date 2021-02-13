@@ -171,12 +171,15 @@ class DysonPureCoolLinkEntity(DysonEntity, FanEntity):
     def oscillate(self, oscillating: bool) -> None:
         """Turn on/of oscillation."""
         _LOGGER.debug("Turn oscillation %s for device %s", oscillating, self.name)
-        self._device.set_oscillation(oscillating)
+        if oscillating:
+            self._device.enable_oscillation()
+        else:
+            self._device.disable_oscillation()
 
     def set_auto_mode(self, auto_mode: bool) -> None:
         """Turn auto mode on/off."""
         _LOGGER.debug("Turn auto mode %s for device %s", auto_mode, self.name)
         if auto_mode:
-            self._device.set_auto_mode(True)
+            self._device.enable_auto_mode()
         else:
-            self._device.set_auto_mode(False)
+            self._device.disable_auto_mode()

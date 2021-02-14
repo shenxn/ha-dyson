@@ -77,7 +77,7 @@ async def async_setup_entry(
 class DysonSensor(DysonEntity):
     """Generic Dyson sensor."""
 
-    _MESSAGE_TYPE = MessageType.ENVIRONMENTAL
+    _MESSAGE_TYPE = MessageType.STATE
     _SENSOR_TYPE = None
 
     def __init__(self, device: DysonDevice, name: str):

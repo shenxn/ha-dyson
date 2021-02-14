@@ -68,7 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
     async def _async_forward_entry_setup():
-        for component in _async_get_platform(device):
+        for component in _async_get_platforms(device):
             hass.async_create_task(
                 hass.config_entries.async_forward_entry_setup(entry, component)
             )
@@ -122,7 +122,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await asyncio.gather(
             *[
                 hass.config_entries.async_forward_entry_unload(entry, component)
-                for component in _async_get_platform(device)
+                for component in _async_get_platforms(device)
             ]
         )
     )
@@ -135,7 +135,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 @callback
-def _async_get_platform(device: DysonDevice) -> List[str]:
+def _async_get_platforms(device: DysonDevice) -> List[str]:
     if isinstance(device, Dyson360Eye):
         return ["binary_sensor", "sensor", "vacuum"]
     return ["air_quality", "fan", "sensor", "switch"]

@@ -12,7 +12,7 @@ from tests.common import MockConfigEntry
 from . import SERIAL, CREDENTIAL, MODULE, HOST, NAME
 
 
-@pytest.fixture
+@pytest.fixture(autouse=True)
 async def setup_entry(hass: HomeAssistant, device: DysonDevice):
     with patch(f"{MODULE}.get_device", return_value=device):
         config_entry = MockConfigEntry(

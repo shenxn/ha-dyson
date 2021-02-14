@@ -69,7 +69,6 @@ async def test_sensors(
     hass: HomeAssistant,
     device: DysonFanDevice,
     sensors: List[str],
-    setup_entry: None,
 ):
     er = await entity_registry.async_get_registry(hass)
     assert len(hass.states.async_all()) == len(sensors)
@@ -86,7 +85,7 @@ async def test_sensors(
 @pytest.mark.parametrize(
     "device", [_get_pure_cool_link, _get_pure_cool_combined], indirect=True
 )
-async def test_fan(hass: HomeAssistant, device: DysonFanDevice, setup_entry: None):
+async def test_fan(hass: HomeAssistant, device: DysonFanDevice):
     assert hass.states.get(f"sensor.{NAME}_humidity").state == "50"
     state = hass.states.get(f"sensor.{NAME}_temperature")
     assert state.state == "6.9"
@@ -109,7 +108,7 @@ async def test_fan(hass: HomeAssistant, device: DysonFanDevice, setup_entry: Non
 @pytest.mark.parametrize(
     "device", [_get_pure_cool_link], indirect=True
 )
-async def test_pure_cool_link(hass: HomeAssistant, device: DysonFanDevice, setup_entry: None):
+async def test_pure_cool_link(hass: HomeAssistant, device: DysonFanDevice):
     assert hass.states.get(f"sensor.{NAME}_filter_life").state == "200"
     device.filter_life = 100
     await update_device(hass, device, MessageType.STATE)
@@ -119,7 +118,7 @@ async def test_pure_cool_link(hass: HomeAssistant, device: DysonFanDevice, setup
 @pytest.mark.parametrize(
     "device", [_get_pure_cool_combined], indirect=True
 )
-async def test_pure_cool_combined(hass: HomeAssistant, device: DysonFanDevice, setup_entry: None):
+async def test_pure_cool_combined(hass: HomeAssistant, device: DysonFanDevice):
     assert hass.states.get(f"sensor.{NAME}_filter_life").state == "50"
     device.hepa_filter_life = 30
     await update_device(hass, device, MessageType.STATE)
@@ -129,7 +128,7 @@ async def test_pure_cool_combined(hass: HomeAssistant, device: DysonFanDevice, s
 @pytest.mark.parametrize(
     "device", [_get_pure_cool_seperated], indirect=True
 )
-async def test_pure_cool_combined(hass: HomeAssistant, device: DysonFanDevice, setup_entry: None):
+async def test_pure_cool_combined(hass: HomeAssistant, device: DysonFanDevice):
     assert hass.states.get(f"sensor.{NAME}_carbon_filter_life").state == "30"
     assert hass.states.get(f"sensor.{NAME}_hepa_filter_life").state == "50"
     device.carbon_filter_life = 20
@@ -142,7 +141,7 @@ async def test_pure_cool_combined(hass: HomeAssistant, device: DysonFanDevice, s
 @pytest.mark.parametrize(
     "device", [_get_360_eye], indirect=True
 )
-async def test_360_eye(hass: HomeAssistant, device: DysonFanDevice, setup_entry: None):
+async def test_360_eye(hass: HomeAssistant, device: DysonFanDevice):
     assert hass.states.get(f"sensor.{NAME}_battery_level").state == "80"
     device.battery_level = 40
     await update_device(hass, device, MessageType.STATE)

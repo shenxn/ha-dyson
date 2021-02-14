@@ -35,7 +35,7 @@ def device(request: pytest.FixtureRequest) -> DysonFanDevice:
         yield device
 
 
-async def test_state(hass: HomeAssistant, setup_entry):
+async def test_state(hass: HomeAssistant):
     state = hass.states.get(ENTITY_ID)
     assert state.state == STATE_ON
     attributes = state.attributes
@@ -60,7 +60,7 @@ async def test_state(hass: HomeAssistant, setup_entry):
         ("oscillate", {ATTR_OSCILLATING: False}, "disable_oscillation", []),
     ]
 )
-async def test_command(hass: HomeAssistant, device: DysonFanDevice, setup_entry, service: str, service_data: dict, command: str, command_args: list):
+async def test_command(hass: HomeAssistant, device: DysonFanDevice, service: str, service_data: dict, command: str, command_args: list):
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(FAN_DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)
@@ -75,7 +75,7 @@ async def test_command(hass: HomeAssistant, device: DysonFanDevice, setup_entry,
         (SERVICE_SET_AUTO_MODE, {ATTR_AUTO_MODE: False}, "disable_auto_mode", []),
     ]
 )
-async def test_service(hass: HomeAssistant, device: DysonFanDevice, setup_entry, service: str, service_data: dict, command: str, command_args: list):
+async def test_service(hass: HomeAssistant, device: DysonFanDevice, service: str, service_data: dict, command: str, command_args: list):
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)

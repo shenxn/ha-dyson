@@ -64,7 +64,7 @@ async def async_setup_entry(
         if isinstance(device, DysonPureCoolLink):
             entities.append(DysonFilterLifeSensor(device, name))
         else:  # DysonPureCool
-            if device.state.carbon_filter_state is None:
+            if device.carbon_filter_life is None:
                 entities.append(DysonCombinedFilterLifeSensor(device, name))
             else:
                 entities.extend([

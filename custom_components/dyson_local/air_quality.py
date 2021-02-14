@@ -60,12 +60,12 @@ class DysonPureCoolLinkAirQualityEntity(DysonAirQualityEntity):
     @property
     def particulate_matter_2_5(self):
         """Return the particulate matter 2.5 level."""
-        return self._device.particulars
+        return self._device.particulates
 
     @property
     def particulate_matter_10(self):
         """Return the particulate matter 10 level."""
-        return self._device.particulars
+        return self._device.particulates
 
     @property
     def volatile_organic_compounds(self):

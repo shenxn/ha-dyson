@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import DEVICE_CLASS_BATTERY
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
-from libdyson import DysonDevice, Dyson360Eye
+from libdyson import DysonDevice, Dyson360Eye, DysonPureCoolLink, DysonPureCool
 from libdyson.const import MessageType
 
 from . import DysonEntity
@@ -21,6 +21,18 @@ SENSORS = {
     "filter_life": ("Filter Life", {
         ATTR_ICON: "mdi:filter-outline",
         ATTR_UNIT_OF_MEASUREMENT: TIME_HOURS,
+    }),
+    "carbon_filter_life": ("Carbon Filter Life", {
+        ATTR_ICON: "mdi:filter-outline",
+        ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
+    }),
+    "hepa_filter_life": ("HEPA Filter Life", {
+        ATTR_ICON: "mdi:filter-outline",
+        ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
+    }),
+    "combined_filter_life": ("Filter Life", {
+        ATTR_ICON: "mdi:filter-outline",
+        ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
     }),
     "humidity": ("Humidity", {
         ATTR_DEVICE_CLASS: DEVICE_CLASS_HUMIDITY,
@@ -45,10 +57,19 @@ async def async_setup_entry(
     else:
         coordinator = hass.data[DOMAIN][DATA_COORDINATORS][config_entry.entry_id]
         entities = [
-            DysonFilterLifeSensor(device, name),
             DysonHumiditySensor(coordinator, device, name),
             DysonTemperatureSensor(coordinator, device, name),
         ]
+        if isinstance(device, DysonPureCoolLink):
+            entities.append(DysonFilterLifeSensor(device, name))
+        else:  # DysonPureCool
+            if device.state.carbon_filter_state is None:
+                entities.append(DysonCombinedFilterLifeSensor(device, name))
+            else:
+                entities.extend([
+                    DysonCarbonFilterLifeSensor(device, name),
+                    DysonHEPAFilterLifeSensor(device, name),
+                ])
     async_add_entities(entities)
 
 
@@ -118,6 +139,40 @@ class DysonFilterLifeSensor(DysonSensor):
     def state(self) -> int:
         """Return the state of the sensor."""
         return self._device.filter_life
+
+
+class DysonCarbonFilterLifeSensor(DysonSensor):
+    """Dyson carbon filter life sensor (in percentage) for Pure Cool."""
+
+    _SENSOR_TYPE = "carbon_filter_life"
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.carbon_filter_life
+
+
+class DysonHEPAFilterLifeSensor(DysonSensor):
+    """Dyson HEPA filter life sensor (in percentage) for Pure Cool."""
+
+    _SENSOR_TYPE = "hepa_filter_life"
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.hepa_filter_life
+
+
+
+class DysonCombinedFilterLifeSensor(DysonSensor):
+    """Dyson combined filter life sensor (in percentage) for Pure Cool."""
+
+    _SENSOR_TYPE = "combined_filter_life"
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.hepa_filter_life
 
 
 class DysonHumiditySensor(DysonSensorEnvironmental):

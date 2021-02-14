@@ -10,7 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform, config_validation as cv
 
-from libdyson.const import MessageType
+from libdyson import MessageType, DysonPureCool, DysonPureCoolLink
 
 from . import DysonEntity, DOMAIN
 from .const import DATA_DEVICES
@@ -62,7 +62,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up Dyson fan from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
-    entity = DysonPureCoolLinkEntity(device, config_entry.data[CONF_NAME])
+    name = config_entry.data[CONF_NAME]
+    if isinstance(device, DysonPureCoolLink):
+        entity = DysonPureCoolLinkEntity(device, name)
+    else:
+        entity = DysonPureCoolEntity(device, name)
     async_add_entities([entity])
 
     platform = entity_platform.current_platform.get()
@@ -74,7 +78,7 @@ async def async_setup_entry(
     )
 
 
-class DysonPureCoolLinkEntity(DysonEntity, FanEntity):
+class DysonFanEntity(DysonEntity, FanEntity):
 
     _MESSAGE_TYPE = MessageType.STATE
 
@@ -138,16 +142,12 @@ class DysonPureCoolLinkEntity(DysonEntity, FanEntity):
     def turn_on(
         self,
         speed: Optional[str] = None,
-        percentage: Optional[int] = None,
-        preset_mode: Optional[str] = None,
         **kwargs,
     ) -> None:
         """Turn on the fan."""
-        _LOGGER.debug("Turn on fan %s with percentage %s", self.name, percentage)
-        if preset_mode:
-            self.set_preset_mode(preset_mode)
-        elif speed is None:
-            # percentage not set, just turn on
+        _LOGGER.debug("Turn on fan %s with speed %s", self.name, speed)
+        if speed is None:
+            # speed not set, just turn on
             self._device.turn_on()
         else:
             self.set_speed(speed)
@@ -183,3 +183,11 @@ class DysonPureCoolLinkEntity(DysonEntity, FanEntity):
             self._device.enable_auto_mode()
         else:
             self._device.disable_auto_mode()
+
+
+class DysonPureCoolLinkEntity(DysonFanEntity):
+    """Dyson Pure Cool Link entity."""
+
+
+class DysonPureCoolEntity(DysonFanEntity):
+    """Dyson Pure Cool entity."""

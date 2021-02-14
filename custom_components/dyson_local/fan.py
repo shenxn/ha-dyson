@@ -120,11 +120,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
         return self._device.oscillation
 
     @property
-    def night_mode(self) -> bool:
-        """Return if night mode is on."""
-        return self._device.night_mode
-
-    @property
     def supported_features(self) -> int:
         """Flag supported features."""
         return SUPPORT_OSCILLATE | SUPPORT_SET_SPEED
@@ -134,7 +129,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
         """Return optional state attributes."""
         return {
             ATTR_AUTO_MODE: self.auto_mode,
-            ATTR_NIGHT_MODE: self.night_mode,
             ATTR_DYSON_SPEED: self.dyson_speed,
             ATTR_DYSON_SPEED_LIST: self.dyson_speed_list,
         }

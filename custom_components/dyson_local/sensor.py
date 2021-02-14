@@ -1,6 +1,6 @@
 """Sensor platform for dyson."""
 
-from typing import Callable
+from typing import Callable, Union
 from homeassistant.const import ATTR_DEVICE_CLASS, ATTR_ICON, ATTR_NAME, ATTR_UNIT_OF_MEASUREMENT, CONF_NAME, DEVICE_CLASS_HUMIDITY, DEVICE_CLASS_TEMPERATURE, PERCENTAGE, STATE_OFF, TEMP_CELSIUS, TIME_HOURS
 from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import DEVICE_CLASS_BATTERY
@@ -11,6 +11,7 @@ from libdyson.const import MessageType
 
 from . import DysonEntity
 from .const import DATA_COORDINATORS, DATA_DEVICES, DOMAIN
+from .utils import environmental_property
 
 
 SENSORS = {
@@ -180,11 +181,9 @@ class DysonHumiditySensor(DysonSensorEnvironmental):
 
     _SENSOR_TYPE = "humidity"
 
-    @property
+    @environmental_property
     def state(self) -> int:
         """Return the state of the sensor."""
-        if self._device.humidity == -1:
-            return STATE_OFF
         return self._device.humidity
 
 
@@ -193,12 +192,16 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
 
     _SENSOR_TYPE = "temperature"
 
+    @environmental_property
+    def temperature_kelvin(self) -> int:
+        return self._device.temperature
+
     @property
     def state(self) -> int:
         """Return the state of the sensor."""
-        temperature_kelvin = self._device.temperature
-        if temperature_kelvin == -1:
-            return STATE_OFF
+        temperature_kelvin = self.temperature_kelvin
+        if isinstance(temperature_kelvin, str):
+            return temperature_kelvin
         if self.hass.config.units.temperature_unit == TEMP_CELSIUS:
             return float(f"{(temperature_kelvin - 273.15):.1f}")
         return float(f"{(temperature_kelvin * 9 / 5 - 459.67):.1f}")

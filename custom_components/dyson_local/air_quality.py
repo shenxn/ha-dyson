@@ -10,6 +10,7 @@ from libdyson import MessageType, DysonDevice, DysonPureCoolLink
 
 from . import DysonEntity
 from .const import DATA_COORDINATORS, DOMAIN, DATA_DEVICES
+from .utils import environmental_property
 
 ATTR_VOC = "volatile_organic_compounds"
 
@@ -49,25 +50,17 @@ class DysonAirQualityEntity(CoordinatorEntity, DysonEntity, AirQualityEntity):
 
 class DysonPureCoolLinkAirQualityEntity(DysonAirQualityEntity):
 
-    @property
-    def air_quality_index(self):
-        """Return the Air Quality Index (AQI)."""
-        return max(
-            self.particulate_matter_2_5,
-            self.volatile_organic_compounds,
-        )
-
-    @property
+    @environmental_property
     def particulate_matter_2_5(self):
         """Return the particulate matter 2.5 level."""
         return self._device.particulates
 
-    @property
+    @environmental_property
     def particulate_matter_10(self):
         """Return the particulate matter 10 level."""
         return self._device.particulates
 
-    @property
+    @environmental_property
     def volatile_organic_compounds(self):
         """Return the VOC (Volatile Organic Compounds) level."""
         return self._device.volatile_organic_compounds
@@ -80,27 +73,17 @@ class DysonPureCoolLinkAirQualityEntity(DysonAirQualityEntity):
 
 class DysonPureCoolAirQualityEntity(DysonAirQualityEntity):
 
-    @property
-    def air_quality_index(self):
-        """Return the Air Quality Index (AQI)."""
-        return max(
-            self.particulate_matter_2_5,
-            self.particulate_matter_10,
-            self.nitrogen_dioxide,
-            self.volatile_organic_compounds,
-        )
-
-    @property
+    @environmental_property
     def particulate_matter_2_5(self):
         """Return the particulate matter 2.5 level."""
         return self._device.particulate_matter_2_5
 
-    @property
+    @environmental_property
     def particulate_matter_10(self):
         """Return the particulate matter 10 level."""
         return self._device.particulate_matter_10
 
-    @property
+    @environmental_property
     def volatile_organic_compounds(self):
         """Return the VOC (Volatile Organic Compounds) level."""
         return self._device.volatile_organic_compounds

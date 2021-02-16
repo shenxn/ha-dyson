@@ -56,6 +56,8 @@ SPEED_HA_TO_DYSON = {
     SPEED_HIGH: 10,
 }
 
+SUPPORTED_FEATURES = SUPPORT_OSCILLATE | SUPPORT_SET_SPEED
+
 
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
@@ -122,7 +124,7 @@ class DysonFanEntity(DysonEntity, FanEntity):
     @property
     def supported_features(self) -> int:
         """Flag supported features."""
-        return SUPPORT_OSCILLATE | SUPPORT_SET_SPEED
+        return SUPPORTED_FEATURES
 
     @property
     def device_state_attributes(self) -> dict:

@@ -7,6 +7,7 @@ from functools import partial
 from typing import List, Optional
 
 from homeassistant.exceptions import ConfigEntryNotReady
+from libdyson import DysonPureHotCoolLink, DysonPureHotCool
 from libdyson.discovery import DysonDiscovery
 from libdyson.dyson_device import DysonDevice
 from libdyson.exceptions import DysonException
@@ -138,7 +139,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 def _async_get_platforms(device: DysonDevice) -> List[str]:
     if isinstance(device, Dyson360Eye):
         return ["binary_sensor", "sensor", "vacuum"]
-    return ["air_quality", "fan", "sensor", "switch"]
+    platforms = ["air_quality", "fan", "sensor", "switch"]
+    if isinstance(device, DysonPureHotCool) or isinstance(device, DysonPureHotCoolLink):
+        platforms.append("climate")
+    return platforms
 
 
 class DysonEntity(Entity):

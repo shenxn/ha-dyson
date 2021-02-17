@@ -17,3 +17,13 @@ set_speed:
     dyson_speed:
       description: Speed
       example: 1
+
+set_air_quality_target:
+  description: Set air quality target.
+  fields:
+    entity_id:
+      description: Name(s) of the entities to set the speed for
+      example: "fan.living_room"
+    air_quality_target:
+      description: Air quality target. Must be one of "good", "default", "sensitive", and "very sensitive"
+      example: sensitive

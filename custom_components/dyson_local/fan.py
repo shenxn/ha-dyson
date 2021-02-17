@@ -2,6 +2,7 @@
 
 from homeassistant.const import CONF_NAME
 import logging
+from libdyson.const import AirQualityTarget
 import voluptuous as vol
 
 from typing import Callable, List, Optional
@@ -10,20 +11,33 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform, config_validation as cv
 
-from libdyson import MessageType, DysonPureCool, DysonPureCoolLink
+from libdyson import MessageType, DysonPureCoolLink
 
 from . import DysonEntity, DOMAIN
 from .const import DATA_DEVICES
 
 _LOGGER = logging.getLogger(__name__)
 
-ATTR_NIGHT_MODE = "night_mode"
+AIR_QUALITY_TARGET_ENUM_TO_STR = {
+    AirQualityTarget.GOOD: "good",
+    AirQualityTarget.DEFAULT: "default",
+    AirQualityTarget.SENSITIVE: "sensitive",
+    AirQualityTarget.VERY_SENSITIVE: "very sensitive",
+}
+
+AIR_QUALITY_TARGET_STR_TO_ENUM = {
+    value: key
+    for key, value in AIR_QUALITY_TARGET_ENUM_TO_STR.items()
+}
+
 ATTR_DYSON_SPEED = "dyson_speed"
 ATTR_DYSON_SPEED_LIST = "dyson_speed_list"
 ATTR_AUTO_MODE = "auto_mode"
+ATTR_AIR_QUALITY_TARGET = "air_quality_target"
 
 SERVICE_SET_AUTO_MODE = "set_auto_mode"
 SERVICE_SET_DYSON_SPEED = "set_speed"
+SERVICE_SET_AIR_QUALITY_TARGET = "set_air_quality_target"
 
 SET_AUTO_MODE_SCHEMA = {
     vol.Required(ATTR_AUTO_MODE): cv.boolean,
@@ -31,6 +45,10 @@ SET_AUTO_MODE_SCHEMA = {
 
 SET_DYSON_SPEED_SCHEMA = {
     vol.Required(ATTR_DYSON_SPEED): cv.positive_int,
+}
+
+SET_AIR_QUALITY_TARGET_SCHEMA = {
+    vol.Required(ATTR_AIR_QUALITY_TARGET): vol.In(AIR_QUALITY_TARGET_STR_TO_ENUM),
 }
 
 SPEED_LIST_HA = [SPEED_LOW, SPEED_MEDIUM, SPEED_HIGH]
@@ -78,6 +96,10 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_SET_DYSON_SPEED, SET_DYSON_SPEED_SCHEMA, "set_dyson_speed"
     )
+    if isinstance(device, DysonPureCoolLink):
+        platform.async_register_entity_service(
+            SERVICE_SET_AIR_QUALITY_TARGET, SET_AIR_QUALITY_TARGET_SCHEMA, "set_air_quality_target"
+        )
 
 
 class DysonFanEntity(DysonEntity, FanEntity):
@@ -183,6 +205,22 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
 class DysonPureCoolLinkEntity(DysonFanEntity):
     """Dyson Pure Cool Link entity."""
+
+    @property
+    def air_quality_target(self) -> str:
+        """Return air quality target."""
+        return AIR_QUALITY_TARGET_ENUM_TO_STR[self._device.air_quality_target]
+
+    @property
+    def device_state_attributes(self) -> dict:
+        """Return optional state attributes."""
+        attributes = super().device_state_attributes
+        attributes[ATTR_AIR_QUALITY_TARGET] = self.air_quality_target
+        return attributes
+
+    def set_air_quality_target(self, air_quality_target: str) -> None:
+        """Set air quality target."""
+        self._device.set_air_quality_target(AIR_QUALITY_TARGET_STR_TO_ENUM[air_quality_target])
 
 
 class DysonPureCoolEntity(DysonFanEntity):

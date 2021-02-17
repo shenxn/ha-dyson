@@ -1,8 +1,8 @@
 from typing import Type
 from libdyson.dyson_device import DysonDevice, DysonFanDevice
-from custom_components.dyson_local.fan import ATTR_AUTO_MODE, ATTR_DYSON_SPEED, ATTR_DYSON_SPEED_LIST, ATTR_NIGHT_MODE, SERVICE_SET_AUTO_MODE, SERVICE_SET_DYSON_SPEED, SPEED_LIST_DYSON, SPEED_LIST_HA, SUPPORTED_FEATURES
+from custom_components.dyson_local.fan import ATTR_AIR_QUALITY_TARGET, ATTR_AUTO_MODE, ATTR_DYSON_SPEED, ATTR_DYSON_SPEED_LIST, SERVICE_SET_AIR_QUALITY_TARGET, SERVICE_SET_AUTO_MODE, SERVICE_SET_DYSON_SPEED, SPEED_LIST_DYSON, SPEED_LIST_HA, SUPPORTED_FEATURES
 from unittest.mock import MagicMock, patch
-from libdyson.const import DEVICE_TYPE_PURE_COOL_LINK, MessageType
+from libdyson.const import AirQualityTarget, DEVICE_TYPE_PURE_COOL_LINK, MessageType
 import pytest
 from custom_components.dyson_local.const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL
 from homeassistant.core import HomeAssistant
@@ -31,6 +31,7 @@ def device(request: pytest.FixtureRequest) -> DysonFanDevice:
     device.speed = 5
     device.auto_mode = False
     device.oscillation = True
+    device.air_quality_target = AirQualityTarget.GOOD
     with patch(f"{MODULE}._async_get_platforms", return_value=["fan"]):
         yield device
 

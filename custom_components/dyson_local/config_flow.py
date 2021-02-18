@@ -81,6 +81,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     self._device_info.credential,
                     self._device_info.product_type,
                     self._device_info.name,
+                    info.get(CONF_HOST),
                 )
             except CannotConnect:
                 errors["base"] = "cannot_connect"

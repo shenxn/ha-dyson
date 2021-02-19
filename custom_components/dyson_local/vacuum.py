@@ -150,7 +150,10 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
         }
 
     def start(self) -> None:
-        self._device.start()
+        if self.state == STATE_PAUSED:
+            self._device.resume()
+        else:
+            self._device.start()
 
     def pause(self) -> None:
         self._device.pause()

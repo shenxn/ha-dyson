@@ -1,6 +1,6 @@
 from typing import Type
 from libdyson.dyson_device import DysonDevice, DysonFanDevice
-from custom_components.dyson_local.fan import ATTR_AIR_QUALITY_TARGET, ATTR_AUTO_MODE, ATTR_DYSON_SPEED, ATTR_DYSON_SPEED_LIST, SERVICE_SET_AIR_QUALITY_TARGET, SERVICE_SET_AUTO_MODE, SERVICE_SET_DYSON_SPEED, SPEED_LIST_DYSON, SPEED_LIST_HA, SUPPORTED_FEATURES
+from custom_components.dyson_local.fan import SPEED_LIST_HA, SUPPORTED_FEATURES
 from unittest.mock import MagicMock, patch
 from libdyson.const import AirQualityTarget, DEVICE_TYPE_PURE_COOL_LINK, MessageType
 import pytest
@@ -42,9 +42,6 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
     attributes = state.attributes
     assert attributes[ATTR_SPEED] == SPEED_MEDIUM
     assert attributes[ATTR_SPEED_LIST] == SPEED_LIST_HA
-    assert attributes[ATTR_DYSON_SPEED] == 5
-    assert attributes[ATTR_DYSON_SPEED_LIST] == SPEED_LIST_DYSON
-    assert attributes[ATTR_AUTO_MODE] is False
     assert attributes[ATTR_OSCILLATING] is True
     assert attributes[ATTR_SUPPORTED_FEATURES] == SUPPORTED_FEATURES
 
@@ -60,8 +57,6 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
     assert state.state == STATE_OFF
     attributes = state.attributes
     assert attributes[ATTR_SPEED] is None
-    assert attributes[ATTR_DYSON_SPEED] is None
-    assert attributes[ATTR_AUTO_MODE] is True
     assert attributes[ATTR_OSCILLATING] is False
 
 
@@ -81,28 +76,3 @@ async def test_command(hass: HomeAssistant, device: DysonFanDevice, service: str
     await hass.services.async_call(FAN_DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)
     func.assert_called_once_with(*command_args)
-
-
-@pytest.mark.parametrize(
-    "service,service_data,command,command_args",
-    [
-        (SERVICE_SET_DYSON_SPEED, {ATTR_DYSON_SPEED: 3}, "set_speed", [3]),
-        (SERVICE_SET_AUTO_MODE, {ATTR_AUTO_MODE: True}, "enable_auto_mode", []),
-        (SERVICE_SET_AUTO_MODE, {ATTR_AUTO_MODE: False}, "disable_auto_mode", []),
-    ]
-)
-async def test_service(hass: HomeAssistant, device: DysonFanDevice, service: str, service_data: dict, command: str, command_args: list):
-    service_data[ATTR_ENTITY_ID] = ENTITY_ID
-    await hass.services.async_call(DOMAIN, service, service_data, blocking=True)
-    func = getattr(device, command)
-    func.assert_called_once_with(*command_args)
-
-
-async def test_set_fan_invalid_arg(hass: HomeAssistant, device: DysonFanDevice):
-    service_data = {
-        ATTR_ENTITY_ID: ENTITY_ID,
-        ATTR_SPEED: "invalid",
-    }
-    with pytest.raises(ValueError):
-        await hass.services.async_call(FAN_DOMAIN, SERVICE_SET_SPEED, service_data, blocking=True)
-    device.set_speed.assert_not_called()

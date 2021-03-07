@@ -30,22 +30,9 @@ AIR_QUALITY_TARGET_STR_TO_ENUM = {
     for key, value in AIR_QUALITY_TARGET_ENUM_TO_STR.items()
 }
 
-ATTR_DYSON_SPEED = "dyson_speed"
-ATTR_DYSON_SPEED_LIST = "dyson_speed_list"
-ATTR_AUTO_MODE = "auto_mode"
 ATTR_AIR_QUALITY_TARGET = "air_quality_target"
 
-SERVICE_SET_AUTO_MODE = "set_auto_mode"
-SERVICE_SET_DYSON_SPEED = "set_speed"
 SERVICE_SET_AIR_QUALITY_TARGET = "set_air_quality_target"
-
-SET_AUTO_MODE_SCHEMA = {
-    vol.Required(ATTR_AUTO_MODE): cv.boolean,
-}
-
-SET_DYSON_SPEED_SCHEMA = {
-    vol.Required(ATTR_DYSON_SPEED): cv.positive_int,
-}
 
 SET_AIR_QUALITY_TARGET_SCHEMA = {
     vol.Required(ATTR_AIR_QUALITY_TARGET): vol.In(AIR_QUALITY_TARGET_STR_TO_ENUM),
@@ -90,12 +77,6 @@ async def async_setup_entry(
     async_add_entities([entity])
 
     platform = entity_platform.current_platform.get()
-    platform.async_register_entity_service(
-        SERVICE_SET_AUTO_MODE, SET_AUTO_MODE_SCHEMA, "set_auto_mode"
-    )
-    platform.async_register_entity_service(
-        SERVICE_SET_DYSON_SPEED, SET_DYSON_SPEED_SCHEMA, "set_dyson_speed"
-    )
     if isinstance(device, DysonPureCoolLink):
         platform.async_register_entity_service(
             SERVICE_SET_AIR_QUALITY_TARGET, SET_AIR_QUALITY_TARGET_SCHEMA, "set_air_quality_target"
@@ -122,16 +103,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
     def speed_list(self) -> list:
         """Get the list of available speeds."""
         return SPEED_LIST_HA
-
-    @property
-    def dyson_speed(self):
-        """Return the current speed."""
-        return self._device.speed
-
-    @property
-    def dyson_speed_list(self) -> list:
-        """Get the list of available dyson speeds."""
-        return SPEED_LIST_DYSON
     
     @property
     def auto_mode(self):
@@ -147,15 +118,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
     def supported_features(self) -> int:
         """Flag supported features."""
         return SUPPORTED_FEATURES
-
-    @property
-    def device_state_attributes(self) -> dict:
-        """Return optional state attributes."""
-        return {
-            ATTR_AUTO_MODE: self.auto_mode,
-            ATTR_DYSON_SPEED: self.dyson_speed,
-            ATTR_DYSON_SPEED_LIST: self.dyson_speed_list,
-        }
 
     def turn_on(
         self,
@@ -194,14 +156,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
         else:
             self._device.disable_oscillation()
 
-    def set_auto_mode(self, auto_mode: bool) -> None:
-        """Turn auto mode on/off."""
-        _LOGGER.debug("Turn auto mode %s for device %s", auto_mode, self.name)
-        if auto_mode:
-            self._device.enable_auto_mode()
-        else:
-            self._device.disable_auto_mode()
-
 
 class DysonPureCoolLinkEntity(DysonFanEntity):
     """Dyson Pure Cool Link entity."""
@@ -214,9 +168,7 @@ class DysonPureCoolLinkEntity(DysonFanEntity):
     @property
     def device_state_attributes(self) -> dict:
         """Return optional state attributes."""
-        attributes = super().device_state_attributes
-        attributes[ATTR_AIR_QUALITY_TARGET] = self.air_quality_target
-        return attributes
+        return {ATTR_AIR_QUALITY_TARGET: self.air_quality_target}
 
     def set_air_quality_target(self, air_quality_target: str) -> None:
         """Set air quality target."""

@@ -1,13 +1,13 @@
 from typing import Type
 from libdyson.dyson_device import DysonDevice, DysonFanDevice
-from custom_components.dyson_local.fan import SPEED_LIST_HA, SUPPORTED_FEATURES
+from custom_components.dyson_local.fan import SUPPORTED_FEATURES, PRESET_MODE_AUTO, PRESET_MODES
 from unittest.mock import MagicMock, patch
 from libdyson.const import AirQualityTarget, DEVICE_TYPE_PURE_COOL_LINK, MessageType
 import pytest
 from custom_components.dyson_local.const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL
 from homeassistant.core import HomeAssistant
 from homeassistant.const import ATTR_ENTITY_ID, ATTR_SUPPORTED_FEATURES, CONF_HOST, CONF_NAME, STATE_OFF, STATE_ON
-from homeassistant.components.fan import ATTR_OSCILLATING, ATTR_SPEED, ATTR_SPEED_LIST, SERVICE_SET_SPEED, SPEED_HIGH, SPEED_LOW, SPEED_MEDIUM, DOMAIN as FAN_DOMAIN, SPEED_OFF
+from homeassistant.components.fan import ATTR_OSCILLATING, ATTR_PRESET_MODES, ATTR_PRESET_MODE, ATTR_PERCENTAGE, ATTR_PERCENTAGE_STEP, SERVICE_SET_SPEED, SPEED_HIGH, SPEED_LOW, SPEED_MEDIUM, DOMAIN as FAN_DOMAIN, SPEED_OFF
 from homeassistant.helpers import entity_registry
 from tests.common import MockConfigEntry
 from custom_components.dyson_local import DOMAIN
@@ -40,8 +40,10 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
     state = hass.states.get(ENTITY_ID)
     assert state.state == STATE_ON
     attributes = state.attributes
-    assert attributes[ATTR_SPEED] == SPEED_MEDIUM
-    assert attributes[ATTR_SPEED_LIST] == SPEED_LIST_HA
+    assert attributes[ATTR_PERCENTAGE] == 50
+    assert attributes[ATTR_PERCENTAGE_STEP] == 10
+    assert attributes[ATTR_PRESET_MODES] == PRESET_MODES
+    assert attributes[ATTR_PRESET_MODE] is None
     assert attributes[ATTR_OSCILLATING] is True
     assert attributes[ATTR_SUPPORTED_FEATURES] == SUPPORTED_FEATURES
 
@@ -56,7 +58,7 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
     state = hass.states.get(ENTITY_ID)
     assert state.state == STATE_OFF
     attributes = state.attributes
-    assert attributes[ATTR_SPEED] is None
+    assert attributes[ATTR_PRESET_MODE] == PRESET_MODE_AUTO
     assert attributes[ATTR_OSCILLATING] is False
 
 
@@ -64,9 +66,12 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
     "service,service_data,command,command_args",
     [
         ("turn_on", {}, "turn_on", []),
-        ("turn_on", {ATTR_SPEED: SPEED_HIGH}, "set_speed", [10]),
+        ("turn_on", {ATTR_PERCENTAGE: 10}, "set_speed", [1]),
+        ("turn_on", {ATTR_PRESET_MODE: PRESET_MODE_AUTO}, "enable_auto_mode", []),
         ("turn_off", {}, "turn_off", []),
-        ("set_speed", {ATTR_SPEED: SPEED_LOW}, "set_speed", [4]),
+        ("set_percentage", {ATTR_PERCENTAGE: 80}, "set_speed", [8]),
+        ("set_percentage", {ATTR_PERCENTAGE: 0}, "turn_off", []),
+        ("set_preset_mode", {ATTR_PRESET_MODE: PRESET_MODE_AUTO}, "enable_auto_mode", []),
         ("oscillate", {ATTR_OSCILLATING: True}, "enable_oscillation", []),
         ("oscillate", {ATTR_OSCILLATING: False}, "disable_oscillation", []),
     ]

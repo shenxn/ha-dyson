@@ -37,11 +37,25 @@ AIR_QUALITY_TARGET_STR_TO_ENUM = {
 }
 
 ATTR_AIR_QUALITY_TARGET = "air_quality_target"
+ATTR_ANGLE_LOW = "angle_low"
+ATTR_ANGLE_HIGH = "angle_high"
+ATTR_TIMER = "timer"
 
 SERVICE_SET_AIR_QUALITY_TARGET = "set_air_quality_target"
+SERVICE_SET_ANGLE = "set_angle"
+SERVICE_SET_TIMER = "set_timer"
 
 SET_AIR_QUALITY_TARGET_SCHEMA = {
     vol.Required(ATTR_AIR_QUALITY_TARGET): vol.In(AIR_QUALITY_TARGET_STR_TO_ENUM),
+}
+
+SET_ANGLE_SCHEMA = {
+    vol.Required(ATTR_ANGLE_LOW): cv.positive_int,
+    vol.Required(ATTR_ANGLE_HIGH): cv.positive_int,
+}
+
+SET_TIMER_SCHEMA = {
+    vol.Required(ATTR_TIMER): cv.positive_int,
 }
 
 PRESET_MODE_AUTO = "auto"
@@ -73,6 +87,13 @@ async def async_setup_entry(
     if isinstance(device, DysonPureCoolLink):
         platform.async_register_entity_service(
             SERVICE_SET_AIR_QUALITY_TARGET, SET_AIR_QUALITY_TARGET_SCHEMA, "set_air_quality_target"
+        )
+    else:  # DysonPureCool
+        platform.async_register_entity_service(
+            SERVICE_SET_ANGLE, SET_ANGLE_SCHEMA, "set_angle"
+        )
+        platform.async_register_entity_service(
+            SERVICE_SET_TIMER, SET_TIMER_SCHEMA, "set_timer"
         )
 
 
@@ -181,3 +202,17 @@ class DysonPureCoolLinkEntity(DysonFanEntity):
 
 class DysonPureCoolEntity(DysonFanEntity):
     """Dyson Pure Cool entity."""
+
+    def set_timer(self, timer: int) -> None:
+        """Set sleep timer."""
+        self._device.set_sleep_timer(timer)
+
+    def set_angle(self, angle_low: int, angle_high: int) -> None:
+        """Set oscillation angle."""
+        _LOGGER.debug(
+            "set low %s and high angle %s for device %s",
+            angle_low,
+            angle_high,
+            self.name,
+        )
+        self._device.enable_oscillation(angle_low, angle_high)

@@ -84,6 +84,9 @@ async def async_setup_entry(
     async_add_entities([entity])
 
     platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        SERVICE_SET_TIMER, SET_TIMER_SCHEMA, "set_timer"
+    )
     if isinstance(device, DysonPureCoolLink):
         platform.async_register_entity_service(
             SERVICE_SET_AIR_QUALITY_TARGET, SET_AIR_QUALITY_TARGET_SCHEMA, "set_air_quality_target"
@@ -91,9 +94,6 @@ async def async_setup_entry(
     else:  # DysonPureCool
         platform.async_register_entity_service(
             SERVICE_SET_ANGLE, SET_ANGLE_SCHEMA, "set_angle"
-        )
-        platform.async_register_entity_service(
-            SERVICE_SET_TIMER, SET_TIMER_SCHEMA, "set_timer"
         )
 
 
@@ -181,6 +181,10 @@ class DysonFanEntity(DysonEntity, FanEntity):
         else:
             self._device.disable_oscillation()
 
+    def set_timer(self, timer: int) -> None:
+        """Set sleep timer."""
+        self._device.set_sleep_timer(timer)
+
 
 class DysonPureCoolLinkEntity(DysonFanEntity):
     """Dyson Pure Cool Link entity."""
@@ -202,10 +206,6 @@ class DysonPureCoolLinkEntity(DysonFanEntity):
 
 class DysonPureCoolEntity(DysonFanEntity):
     """Dyson Pure Cool entity."""
-
-    def set_timer(self, timer: int) -> None:
-        """Set sleep timer."""
-        self._device.set_sleep_timer(timer)
 
     def set_angle(self, angle_low: int, angle_high: int) -> None:
         """Set oscillation angle."""

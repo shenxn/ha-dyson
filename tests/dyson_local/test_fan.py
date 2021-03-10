@@ -1,6 +1,6 @@
 from typing import Type
 from libdyson.dyson_device import DysonDevice, DysonFanDevice
-from custom_components.dyson_local.fan import SUPPORTED_FEATURES, PRESET_MODE_AUTO, PRESET_MODES
+from custom_components.dyson_local.fan import SUPPORTED_FEATURES, PRESET_MODE_AUTO, PRESET_MODES, SERVICE_SET_TIMER, ATTR_TIMER
 from unittest.mock import MagicMock, patch
 from libdyson.const import AirQualityTarget, DEVICE_TYPE_PURE_COOL_LINK, MessageType
 import pytest
@@ -79,5 +79,18 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
 async def test_command(hass: HomeAssistant, device: DysonFanDevice, service: str, service_data: dict, command: str, command_args: list):
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(FAN_DOMAIN, service, service_data, blocking=True)
+    func = getattr(device, command)
+    func.assert_called_once_with(*command_args)
+
+
+@pytest.mark.parametrize(
+    "service,service_data,command,command_args",
+    [
+        (SERVICE_SET_TIMER, {ATTR_TIMER: 50}, "set_sleep_timer", [50])
+    ]
+)
+async def test_service(hass: HomeAssistant, device: DysonFanDevice, service: str, service_data: dict, command: str, command_args: list):
+    service_data[ATTR_ENTITY_ID] = ENTITY_ID
+    await hass.services.async_call(DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)
     func.assert_called_once_with(*command_args)

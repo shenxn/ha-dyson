@@ -1,4 +1,4 @@
-from custom_components.dyson_local.fan import SERVICE_SET_TIMER, ATTR_TIMER, SERVICE_SET_ANGLE, ATTR_ANGLE_LOW, ATTR_ANGLE_HIGH
+from custom_components.dyson_local.fan import SERVICE_SET_ANGLE, ATTR_ANGLE_LOW, ATTR_ANGLE_HIGH
 from unittest.mock import MagicMock, patch
 from libdyson.const import AirQualityTarget, MessageType
 import pytest
@@ -26,7 +26,6 @@ def device() -> DysonPureCool:
 @pytest.mark.parametrize(
     "service,service_data,command,command_args",
     [
-        (SERVICE_SET_TIMER, {ATTR_TIMER: 50}, "set_sleep_timer", [50]),
         (SERVICE_SET_ANGLE, {ATTR_ANGLE_LOW: 5, ATTR_ANGLE_HIGH: 300}, "enable_oscillation", [5, 300])
     ]
 )

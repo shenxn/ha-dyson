@@ -58,9 +58,6 @@ SET_TIMER_SCHEMA = {
     vol.Required(ATTR_TIMER): cv.positive_int,
 }
 
-PRESET_MODE_AUTO = "auto"
-PRESET_MODES = [PRESET_MODE_AUTO]
-
 SPEED_LIST_DYSON = list(range(1, 11))  # 1, 2, ..., 10
 
 SPEED_RANGE = (
@@ -119,18 +116,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
         return ranged_value_to_percentage(SPEED_RANGE, int(self._device.speed))
 
     @property
-    def preset_modes(self) -> List[str]:
-        """Return the available preset modes."""
-        return PRESET_MODES
-
-    @property
-    def preset_mode(self) -> Optional[str]:
-        """Return the current preset mode."""
-        if self._device.auto_mode:
-            return PRESET_MODE_AUTO
-        return None
-
-    @property
     def oscillating(self):
         """Return the oscillation state."""
         return self._device.oscillation
@@ -149,9 +134,7 @@ class DysonFanEntity(DysonEntity, FanEntity):
     ) -> None:
         """Turn on the fan."""
         _LOGGER.debug("Turn on fan %s with percentage %s", self.name, percentage)
-        if preset_mode:
-            self.set_preset_mode(preset_mode)
-        elif percentage is None:
+        if percentage is None:
             # percentage not set, just turn on
             self._device.turn_on()
         else:
@@ -166,12 +149,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
         """Set the speed percentage of the fan."""
         dyson_speed = math.ceil(percentage_to_ranged_value(SPEED_RANGE, percentage))
         self._device.set_speed(dyson_speed)
-
-    def set_preset_mode(self, preset_mode: str) -> None:
-        """Set a preset mode on the fan."""
-        self._valid_preset_mode_or_raise(preset_mode)
-        # There currently is only one
-        self._device.enable_auto_mode()
 
     def oscillate(self, oscillating: bool) -> None:
         """Turn on/of oscillation."""

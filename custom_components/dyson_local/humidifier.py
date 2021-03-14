@@ -12,7 +12,7 @@ from homeassistant.components.humidifier.const import MODE_NORMAL, MODE_AUTO
 from homeassistant.const import CONF_NAME
 from homeassistant.helpers import entity_platform
 
-from libdyson import MessageType, DysonPureHumidityCool, WaterHardness
+from libdyson import MessageType, DysonPureHumidifyCool, WaterHardness
 
 from . import DysonEntity
 from .const import DOMAIN, DATA_DEVICES

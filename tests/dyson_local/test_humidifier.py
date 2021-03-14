@@ -2,7 +2,7 @@ from typing import Type
 from libdyson.dyson_device import DysonDevice
 from custom_components.dyson_local.humidifier import MIN_HUMIDITY, MAX_HUMIDITY, SUPPORTED_FEATURES, SERVICE_SET_WATER_HARDNESS, ATTR_WATER_HARDNESS
 from unittest.mock import MagicMock, patch
-from libdyson import DysonPureHumidityCool, DEVICE_TYPE_PURE_HUMIDITY_COOL, MessageType, WaterHardness
+from libdyson import DysonPureHumidifyCool, DEVICE_TYPE_PURE_HUMIDIFY_COOL, MessageType, WaterHardness
 from libdyson.const import AirQualityTarget
 import pytest
 from custom_components.dyson_local.const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL
@@ -15,14 +15,14 @@ from tests.common import MockConfigEntry
 from custom_components.dyson_local import DOMAIN
 from . import NAME, SERIAL, CREDENTIAL, HOST, MODULE, get_base_device, update_device
 
-DEVICE_TYPE = DEVICE_TYPE_PURE_HUMIDITY_COOL
+DEVICE_TYPE = DEVICE_TYPE_PURE_HUMIDIFY_COOL
 
 ENTITY_ID = f"humidifier.{NAME}"
 
 
 @pytest.fixture
-def device() -> DysonPureHumidityCool:
-    device = get_base_device(DysonPureHumidityCool, DEVICE_TYPE_PURE_HUMIDITY_COOL)
+def device() -> DysonPureHumidifyCool:
+    device = get_base_device(DysonPureHumidifyCool, DEVICE_TYPE_PURE_HUMIDIFY_COOL)
     device.is_on = True
     device.speed = 5
     device.auto_mode = False
@@ -35,7 +35,7 @@ def device() -> DysonPureHumidityCool:
         yield device
 
 
-async def test_state(hass: HomeAssistant, device: DysonPureHumidityCool):
+async def test_state(hass: HomeAssistant, device: DysonPureHumidifyCool):
     state = hass.states.get(ENTITY_ID)
     assert state.state == STATE_ON
     attributes = state.attributes
@@ -68,7 +68,7 @@ async def test_state(hass: HomeAssistant, device: DysonPureHumidityCool):
         (SERVICE_SET_MODE, {ATTR_MODE: MODE_NORMAL}, "disable_humidification_auto_mode", []),
     ]
 )
-async def test_command(hass: HomeAssistant, device: DysonPureHumidityCool, service: str, service_data: dict, command: str, command_args: list):
+async def test_command(hass: HomeAssistant, device: DysonPureHumidifyCool, service: str, service_data: dict, command: str, command_args: list):
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(HUMIDIFIER_DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)
@@ -83,7 +83,7 @@ async def test_command(hass: HomeAssistant, device: DysonPureHumidityCool, servi
         (SERVICE_SET_WATER_HARDNESS, {ATTR_WATER_HARDNESS: "hard"}, "set_water_hardness", [WaterHardness.HARD]),
     ]
 )
-async def test_service(hass: HomeAssistant, device: DysonPureHumidityCool, service: str, service_data: dict, command: str, command_args: list):
+async def test_service(hass: HomeAssistant, device: DysonPureHumidifyCool, service: str, service_data: dict, command: str, command_args: list):
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)

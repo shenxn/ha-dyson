@@ -7,7 +7,7 @@ from functools import partial
 from typing import List, Optional
 
 from homeassistant.exceptions import ConfigEntryNotReady
-from libdyson import DysonPureHotCoolLink, DysonPureHotCool, DysonPureHumidityCool
+from libdyson import DysonPureHotCoolLink, DysonPureHotCool, DysonPureHumidifyCool
 from libdyson.discovery import DysonDiscovery
 from libdyson.dyson_device import DysonDevice
 from libdyson.exceptions import DysonException
@@ -142,7 +142,7 @@ def _async_get_platforms(device: DysonDevice) -> List[str]:
     platforms = ["air_quality", "fan", "sensor", "switch"]
     if isinstance(device, DysonPureHotCool) or isinstance(device, DysonPureHotCoolLink):
         platforms.append("climate")
-    if isinstance(device, DysonPureHumidityCool):
+    if isinstance(device, DysonPureHumidifyCool):
         platforms.append("humidifier")
     return platforms
 

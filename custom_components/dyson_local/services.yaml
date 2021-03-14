@@ -21,6 +21,16 @@ set_angle:
       description: The angle at which the oscillation should end
       example: 255
 
+set_oscillation_mode:
+  description: Set oscillation mode.
+  fields:
+    entity_id:
+      description: Name(s) of the entities for which to set the oscillation mode
+      example: "fan.living_room"
+    oscillation_mode:
+      description: The mode of the oscillation. Must be one of "45", "90", or "breeze"
+      example: "breeze"
+
 set_timer:
   description: Set the sleep timer.
   fields:

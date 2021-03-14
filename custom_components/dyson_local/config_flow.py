@@ -8,15 +8,24 @@ from homeassistant.exceptions import HomeAssistantError
 from libdyson.cloud import DysonDeviceInfo
 import voluptuous as vol
 from libdyson.discovery import DysonDiscovery
-from libdyson.exceptions import DysonException, DysonInvalidCredential
-from libdyson import get_device, DEVICE_TYPE_NAMES
+from libdyson.exceptions import DysonException, DysonInvalidCredential, DysonFailedToParseWifiInfo
+from libdyson import get_device, DEVICE_TYPE_NAMES, get_mqtt_info_from_wifi_info
 from voluptuous.error import Invalid
 from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-
 DISCOVERY_TIMEOUT = 10
+
+CONF_METHOD = "method"
+CONF_SSID = "ssid"
+CONF_PASSWORD = "password"
+
+SETUP_METHODS = {
+    "wifi": "Setup using WiFi information",
+    "manual": "Setup manually",
+}
+
 
 class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Dyson local config flow."""
@@ -28,7 +37,62 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Initialize the config flow."""
         self._device_info = None
 
-    async def async_step_user(self, info):
+    async def async_step_user(self, info: Optional[dict]=None):
+        if info is not None:
+            if info[CONF_METHOD] == "wifi":
+                return await self.async_step_wifi()
+            return await self.async_step_manual()
+
+        return self.async_show_form(
+            step_id="user",
+            data_schema=vol.Schema({
+                vol.Required(CONF_METHOD): vol.In(SETUP_METHODS)
+            }),
+        )
+
+    async def async_step_wifi(self, info: Optional[dict]=None):
+        errors = {}
+        if info is not None:
+            try:
+                serial, credential, device_type = get_mqtt_info_from_wifi_info(
+                    info[CONF_SSID], info[CONF_PASSWORD]
+                )
+            except DysonFailedToParseWifiInfo:
+                errors["base"] = "cannot_parse_wifi_info"
+            else:
+                device_type_name = DEVICE_TYPE_NAMES[device_type]
+                _LOGGER.debug("Successfully parse WiFi information")
+                _LOGGER.debug("Serial: %s", serial)
+                _LOGGER.debug("Device Type: %s", device_type)
+                _LOGGER.debug("Device Type Name: %s", device_type_name)
+                try:
+                    data = await self._async_get_entry_data(
+                        serial, credential, device_type, device_type_name, info.get(CONF_HOST)
+                    )
+                except InvalidAuth:
+                    errors["base"] = "invalid_auth"
+                except CannotConnect:
+                    errors["base"] = "cannot_connect"
+                except CannotFind:
+                    errors["base"] = "cannot_find"
+                else:
+                    return self.async_create_entry(
+                        title=device_type_name,
+                        data=data,
+                    )
+
+        info = info or {}
+        return self.async_show_form(
+            step_id="wifi",
+            data_schema=vol.Schema({
+                vol.Required(CONF_SSID, default=info.get(CONF_SSID, "")): str,
+                vol.Required(CONF_PASSWORD, default=info.get(CONF_PASSWORD, "")): str,
+                vol.Optional(CONF_HOST, default=info.get(CONF_HOST, "")): str,
+            }),
+            errors=errors,
+        )
+
+    async def async_step_manual(self, info: Optional[dict]=None):
         errors = {}
         if info is not None:
             serial = info[CONF_SERIAL]
@@ -62,7 +126,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         info = info or {}
         return self.async_show_form(
-            step_id="user",
+            step_id="manual",
             data_schema=vol.Schema({
                 vol.Required(CONF_SERIAL, default=info.get(CONF_SERIAL, "")): str,
                 vol.Required(CONF_CREDENTIAL, default=info.get(CONF_CREDENTIAL, "")): str,

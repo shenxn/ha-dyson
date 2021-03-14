@@ -4,22 +4,36 @@
     "step": {
       "user": {
         "data": {
+          "method": "Setup method"
+        }
+      },
+      "wifi": {
+        "description": "Find your device WiFi information from the sticker on your device body or user's manual. Don't fill in your home WiFi info.",
+        "data": {
+          "ssid": "Device WiFi SSID",
+          "password": "Device WiFi Password",
+          "host": "Host (Optional)"
+        }
+      },
+      "manual": {
+        "data": {
           "serial": "Serial",
           "credential": "Credential",
-          "host": "Host",
+          "host": "Host (Optional)",
           "device_type": "Device Type"
         }
       },
       "host": {
         "data": {
-          "host": "Host"
+          "host": "Host (Optional)"
         }
       }
     },
     "error": {
       "cannot_connect": "Failed to connect",
       "cannot_find": "Failed to find the device using discovery",
-      "invalid_auth": "Invalid authentication"
+      "invalid_auth": "Invalid authentication",
+      "cannot_parse_wifi_info": "Failed to parse device WiFi information"
     },
     "abort": {
       "already_configured": "Device already configured"

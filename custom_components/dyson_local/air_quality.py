@@ -1,15 +1,20 @@
 """Air quality platform for dyson."""
 
 from typing import Callable
-from homeassistant.core import HomeAssistant
+
+from libdyson import DysonDevice, DysonPureCoolLink, MessageType
+
+from homeassistant.components.air_quality import AirQualityEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
-from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
-from homeassistant.components.air_quality import AirQualityEntity
-from libdyson import MessageType, DysonDevice, DysonPureCoolLink
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+)
 
 from . import DysonEntity
-from .const import DATA_COORDINATORS, DOMAIN, DATA_DEVICES
+from .const import DATA_COORDINATORS, DATA_DEVICES, DOMAIN
 from .utils import environmental_property
 
 ATTR_VOC = "volatile_organic_compounds"
@@ -30,10 +35,14 @@ async def async_setup_entry(
 
 
 class DysonAirQualityEntity(CoordinatorEntity, DysonEntity, AirQualityEntity):
+    """Dyson air quality entity base class."""
 
     _MESSAGE_TYPE: MessageType.ENVIRONMENTAL
 
-    def __init__(self, coordinator: DataUpdateCoordinator, device: DysonDevice, name: str):
+    def __init__(
+        self, coordinator: DataUpdateCoordinator, device: DysonDevice, name: str
+    ):
+        """Initialize the air quality entity."""
         CoordinatorEntity.__init__(self, coordinator)
         DysonEntity.__init__(self, device, name)
 
@@ -49,6 +58,7 @@ class DysonAirQualityEntity(CoordinatorEntity, DysonEntity, AirQualityEntity):
 
 
 class DysonPureCoolLinkAirQualityEntity(DysonAirQualityEntity):
+    """Dyson Pure Cool Link air quality entity."""
 
     @environmental_property
     def particulate_matter_2_5(self):
@@ -72,6 +82,7 @@ class DysonPureCoolLinkAirQualityEntity(DysonAirQualityEntity):
 
 
 class DysonPureCoolAirQualityEntity(DysonAirQualityEntity):
+    """Dyson Pure Cool air quality entity."""
 
     @environmental_property
     def particulate_matter_2_5(self):

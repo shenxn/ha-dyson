@@ -1,15 +1,31 @@
-from custom_components.dyson_local.utils import environmental_property
+"""Dyson climate platform."""
+
+import logging
 from typing import List, Optional
-from homeassistant.components.climate.const import CURRENT_HVAC_COOL, CURRENT_HVAC_HEAT, CURRENT_HVAC_IDLE, CURRENT_HVAC_OFF, FAN_DIFFUSE, FAN_FOCUS, HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF, SUPPORT_FAN_MODE, SUPPORT_TARGET_TEMPERATURE
-from homeassistant.core import HomeAssistant, Callable
+
+from libdyson import DysonPureHotCoolLink
+
+from custom_components.dyson_local.utils import environmental_property
+from homeassistant.components.climate import ClimateEntity
+from homeassistant.components.climate.const import (
+    CURRENT_HVAC_COOL,
+    CURRENT_HVAC_HEAT,
+    CURRENT_HVAC_IDLE,
+    CURRENT_HVAC_OFF,
+    FAN_DIFFUSE,
+    FAN_FOCUS,
+    HVAC_MODE_COOL,
+    HVAC_MODE_HEAT,
+    HVAC_MODE_OFF,
+    SUPPORT_FAN_MODE,
+    SUPPORT_TARGET_TEMPERATURE,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_TEMPERATURE, CONF_NAME, TEMP_CELSIUS
-from homeassistant.components.climate import ClimateEntity
-from libdyson import DysonPureHotCool, DysonPureHotCoolLink
-import logging
+from homeassistant.core import Callable, HomeAssistant
 
 from . import DysonEntity
-from .const import DOMAIN, DATA_DEVICES
+from .const import DATA_DEVICES, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +49,7 @@ async def async_setup_entry(
 
 
 class DysonClimateEntity(DysonEntity, ClimateEntity):
+    """Dyson climate entity base class."""
 
     @property
     def hvac_mode(self) -> str:
@@ -149,6 +166,7 @@ class DysonPureHotCoolLinkEntity(DysonClimateEntity):
         return SUPPORT_FLAGS_LINK
 
     def set_fan_mode(self, fan_mode: str) -> None:
+        """Set fan mode of the device."""
         _LOGGER.debug("Set %s focus mode %s", self.name, fan_mode)
         if fan_mode == FAN_FOCUS:
             self._device.enable_focus_mode()

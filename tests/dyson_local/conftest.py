@@ -1,19 +1,27 @@
+"""Configure Dyson Local tests."""
 
-from typing import Type
-from custom_components.dyson_local import DOMAIN
-from custom_components.dyson_local.const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL
-from homeassistant.core import HomeAssistant
-from homeassistant.const import CONF_HOST, CONF_NAME
-import pytest
+from unittest.mock import patch
+
 from libdyson import DysonDevice
-from unittest.mock import MagicMock, patch
-from tests.common import MockConfigEntry
+import pytest
 
-from . import SERIAL, CREDENTIAL, MODULE, HOST, NAME
+from custom_components.dyson_local import DOMAIN
+from custom_components.dyson_local.const import (
+    CONF_CREDENTIAL,
+    CONF_DEVICE_TYPE,
+    CONF_SERIAL,
+)
+from homeassistant.const import CONF_HOST, CONF_NAME
+from homeassistant.core import HomeAssistant
+
+from . import CREDENTIAL, HOST, MODULE, NAME, SERIAL
+
+from tests.common import MockConfigEntry
 
 
 @pytest.fixture(autouse=True)
 async def setup_entry(hass: HomeAssistant, device: DysonDevice):
+    """Set up mocked config entry."""
     with patch(f"{MODULE}.get_device", return_value=device):
         config_entry = MockConfigEntry(
             domain=DOMAIN,

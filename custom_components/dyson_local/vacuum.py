@@ -1,10 +1,26 @@
 """Vacuum platform for Dyson."""
 
 from typing import Callable, List
-from homeassistant.const import CONF_NAME, STATE_PAUSED
-from libdyson.dyson_360_eye import VacuumState, VacuumPowerMode
-from homeassistant.components.vacuum import ATTR_STATUS, STATE_CLEANING, STATE_DOCKED, STATE_ERROR, STATE_RETURNING, SUPPORT_BATTERY, SUPPORT_FAN_SPEED, SUPPORT_PAUSE, SUPPORT_RETURN_HOME, SUPPORT_START, SUPPORT_STATE, SUPPORT_STATUS, SUPPORT_TURN_ON, StateVacuumEntity
+
+from libdyson.dyson_360_eye import VacuumPowerMode, VacuumState
+
+from homeassistant.components.vacuum import (
+    ATTR_STATUS,
+    STATE_CLEANING,
+    STATE_DOCKED,
+    STATE_ERROR,
+    STATE_RETURNING,
+    SUPPORT_BATTERY,
+    SUPPORT_FAN_SPEED,
+    SUPPORT_PAUSE,
+    SUPPORT_RETURN_HOME,
+    SUPPORT_START,
+    SUPPORT_STATE,
+    SUPPORT_STATUS,
+    StateVacuumEntity,
+)
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_NAME, STATE_PAUSED
 from homeassistant.core import HomeAssistant
 
 from . import DysonEntity
@@ -107,23 +123,23 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
 
     @property
     def state(self) -> str:
+        """Return the state of the vacuum."""
         return DYSON_STATES[self._device.state]
 
     @property
     def status(self) -> str:
+        """Return the status of the vacuum."""
         return DYSON_STATUS[self._device.state]
 
     @property
     def battery_level(self) -> int:
         """Return the battery level of the vacuum cleaner."""
         return self._device.battery_level
+
     @property
     def fan_speed(self) -> str:
         """Return the fan speed of the vacuum cleaner."""
-        fan_speed = (
-            "Max" if self._device.power_mode == VacuumPowerMode.MAX
-            else "Quiet"
-        )
+        fan_speed = "Max" if self._device.power_mode == VacuumPowerMode.MAX else "Quiet"
         return fan_speed
 
     @property
@@ -150,21 +166,23 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
         }
 
     def start(self) -> None:
+        """Start the device."""
         if self.state == STATE_PAUSED:
             self._device.resume()
         else:
             self._device.start()
 
     def pause(self) -> None:
+        """Pause the device."""
         self._device.pause()
 
     def return_to_base(self, **kwargs) -> None:
+        """Return the device to base."""
         self._device.abort()
 
     def set_fan_speed(self, fan_speed: str, **kwargs) -> None:
         """Set fan speed."""
         power_mode = (
-            VacuumPowerMode.MAX if fan_speed == "Max"
-            else VacuumPowerMode.QUIET
+            VacuumPowerMode.MAX if fan_speed == "Max" else VacuumPowerMode.QUIET
         )
         self._device.set_power_mode(power_mode)

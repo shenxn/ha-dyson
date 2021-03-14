@@ -1,19 +1,28 @@
-from custom_components.dyson_local.fan import SERVICE_SET_ANGLE, ATTR_ANGLE_LOW, ATTR_ANGLE_HIGH
-from unittest.mock import MagicMock, patch
-from libdyson.const import AirQualityTarget, MessageType
-import pytest
-from homeassistant.core import HomeAssistant
-from homeassistant.const import ATTR_ENTITY_ID
-from custom_components.dyson_local import DOMAIN
-from libdyson import DEVICE_TYPE_PURE_COOL, DysonPureCool
-from . import NAME, SERIAL, CREDENTIAL, HOST, MODULE, get_base_device, update_device
+"""Tests for Dyson Pure Cool fan entity."""
 
-DEVICE_TYPE = DEVICE_TYPE_PURE_COOL
+from unittest.mock import patch
+
+from libdyson import DEVICE_TYPE_PURE_COOL, DysonPureCool
+from libdyson.const import MessageType
+import pytest
+
+from custom_components.dyson_local import DOMAIN
+from custom_components.dyson_local.fan import (
+    ATTR_ANGLE_HIGH,
+    ATTR_ANGLE_LOW,
+    SERVICE_SET_ANGLE,
+)
+from homeassistant.const import ATTR_ENTITY_ID
+from homeassistant.core import HomeAssistant
+
+from . import MODULE, NAME, get_base_device, update_device
 
 ENTITY_ID = f"fan.{NAME}"
 
+
 @pytest.fixture
 def device() -> DysonPureCool:
+    """Return mocked device."""
     device = get_base_device(DysonPureCool, DEVICE_TYPE_PURE_COOL)
     device.is_on = True
     device.speed = 5
@@ -26,6 +35,7 @@ def device() -> DysonPureCool:
 
 
 async def test_state(hass: HomeAssistant, device: DysonPureCool):
+    """Test entity state and attributes."""
     attributes = hass.states.get(ENTITY_ID).attributes
     assert attributes[ATTR_ANGLE_LOW] == 10
     assert attributes[ATTR_ANGLE_HIGH] == 100
@@ -40,10 +50,23 @@ async def test_state(hass: HomeAssistant, device: DysonPureCool):
 @pytest.mark.parametrize(
     "service,service_data,command,command_args",
     [
-        (SERVICE_SET_ANGLE, {ATTR_ANGLE_LOW: 5, ATTR_ANGLE_HIGH: 300}, "enable_oscillation", [5, 300])
-    ]
+        (
+            SERVICE_SET_ANGLE,
+            {ATTR_ANGLE_LOW: 5, ATTR_ANGLE_HIGH: 300},
+            "enable_oscillation",
+            [5, 300],
+        )
+    ],
 )
-async def test_service(hass: HomeAssistant, device: DysonPureCool, service: str, service_data: dict, command: str, command_args: list):
+async def test_service(
+    hass: HomeAssistant,
+    device: DysonPureCool,
+    service: str,
+    service_data: dict,
+    command: str,
+    command_args: list,
+):
+    """Test custom services."""
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)

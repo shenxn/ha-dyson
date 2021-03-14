@@ -1,20 +1,34 @@
-from typing import Type
-from libdyson.dyson_device import DysonDevice, DysonFanDevice
-from custom_components.dyson_local.fan import SUPPORTED_FEATURES, SERVICE_SET_TIMER, ATTR_TIMER
-from unittest.mock import MagicMock, patch
-from libdyson.const import AirQualityTarget, DEVICE_TYPE_PURE_COOL_LINK, MessageType
-import pytest
-from custom_components.dyson_local.const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL
-from homeassistant.core import HomeAssistant
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_SUPPORTED_FEATURES, CONF_HOST, CONF_NAME, STATE_OFF, STATE_ON
-from homeassistant.components.fan import ATTR_OSCILLATING, ATTR_PERCENTAGE, ATTR_PERCENTAGE_STEP, SERVICE_SET_SPEED, SPEED_HIGH, SPEED_LOW, SPEED_MEDIUM, DOMAIN as FAN_DOMAIN, SPEED_OFF
-from homeassistant.helpers import entity_registry
-from tests.common import MockConfigEntry
-from custom_components.dyson_local import DOMAIN
-from libdyson import DEVICE_TYPE_PURE_COOL, DysonPureCool, DysonPureCoolLink
-from . import NAME, SERIAL, CREDENTIAL, HOST, MODULE, get_base_device, update_device
+"""Tests for Dyson fan platform."""
 
-DEVICE_TYPE = DEVICE_TYPE_PURE_COOL
+from unittest.mock import patch
+
+from libdyson import DEVICE_TYPE_PURE_COOL, DysonPureCool, DysonPureCoolLink
+from libdyson.const import DEVICE_TYPE_PURE_COOL_LINK, AirQualityTarget, MessageType
+from libdyson.dyson_device import DysonFanDevice
+import pytest
+
+from custom_components.dyson_local import DOMAIN
+from custom_components.dyson_local.fan import (
+    ATTR_TIMER,
+    SERVICE_SET_TIMER,
+    SUPPORTED_FEATURES,
+)
+from homeassistant.components.fan import (
+    ATTR_OSCILLATING,
+    ATTR_PERCENTAGE,
+    ATTR_PERCENTAGE_STEP,
+    DOMAIN as FAN_DOMAIN,
+)
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    ATTR_SUPPORTED_FEATURES,
+    STATE_OFF,
+    STATE_ON,
+)
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry
+
+from . import MODULE, NAME, SERIAL, get_base_device, update_device
 
 ENTITY_ID = f"fan.{NAME}"
 
@@ -26,6 +40,7 @@ ENTITY_ID = f"fan.{NAME}"
     ]
 )
 def device(request: pytest.FixtureRequest) -> DysonFanDevice:
+    """Return mocked device."""
     device = get_base_device(request.param[0], request.param[1])
     device.is_on = True
     device.speed = 5
@@ -37,6 +52,7 @@ def device(request: pytest.FixtureRequest) -> DysonFanDevice:
 
 
 async def test_state(hass: HomeAssistant, device: DysonFanDevice):
+    """Test entity state and attributes."""
     state = hass.states.get(ENTITY_ID)
     assert state.state == STATE_ON
     attributes = state.attributes
@@ -69,9 +85,17 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
         ("set_percentage", {ATTR_PERCENTAGE: 0}, "turn_off", []),
         ("oscillate", {ATTR_OSCILLATING: True}, "enable_oscillation", []),
         ("oscillate", {ATTR_OSCILLATING: False}, "disable_oscillation", []),
-    ]
+    ],
 )
-async def test_command(hass: HomeAssistant, device: DysonFanDevice, service: str, service_data: dict, command: str, command_args: list):
+async def test_command(
+    hass: HomeAssistant,
+    device: DysonFanDevice,
+    service: str,
+    service_data: dict,
+    command: str,
+    command_args: list,
+):
+    """Test platform services."""
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(FAN_DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)
@@ -83,9 +107,17 @@ async def test_command(hass: HomeAssistant, device: DysonFanDevice, service: str
     [
         (SERVICE_SET_TIMER, {ATTR_TIMER: 0}, "disable_sleep_timer", []),
         (SERVICE_SET_TIMER, {ATTR_TIMER: 50}, "set_sleep_timer", [50]),
-    ]
+    ],
 )
-async def test_service(hass: HomeAssistant, device: DysonFanDevice, service: str, service_data: dict, command: str, command_args: list):
+async def test_service(
+    hass: HomeAssistant,
+    device: DysonFanDevice,
+    service: str,
+    service_data: dict,
+    command: str,
+    command_args: list,
+):
+    """Test custom services."""
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)

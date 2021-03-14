@@ -1,10 +1,14 @@
 """Binary sensor platform for dyson."""
 
 from typing import Callable
+
+from homeassistant.components.binary_sensor import (
+    DEVICE_CLASS_BATTERY_CHARGING,
+    BinarySensorEntity,
+)
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
-from homeassistant.components.binary_sensor import BinarySensorEntity, DEVICE_CLASS_BATTERY_CHARGING
-from homeassistant.config_entries import ConfigEntry
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
@@ -20,6 +24,7 @@ async def async_setup_entry(
 
 
 class Dyson360EyeBatteryChargingSensor(DysonEntity, BinarySensorEntity):
+    """Dyson 360 eye battery charging sensor."""
 
     @property
     def state(self) -> bool:

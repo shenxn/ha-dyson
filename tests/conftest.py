@@ -5,7 +5,7 @@ import functools
 import logging
 import ssl
 import threading
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from aiohttp.test_utils import make_mocked_request
 import multidict
@@ -16,7 +16,6 @@ from homeassistant import core as ha, loader, runner, util
 from homeassistant.auth.const import GROUP_ID_ADMIN, GROUP_ID_READ_ONLY
 from homeassistant.auth.models import Credentials
 from homeassistant.auth.providers import homeassistant, legacy_api_password
-from homeassistant.components import mqtt
 from homeassistant.components.websocket_api.auth import (
     TYPE_AUTH,
     TYPE_AUTH_OK,
@@ -35,10 +34,10 @@ from tests.common import (  # noqa: E402, isort:skip
     CLIENT_ID,
     INSTANCES,
     MockUser,
-    async_fire_mqtt_message,
     async_test_home_assistant,
     mock_storage as mock_storage,
 )
+
 
 logging.basicConfig(level=logging.DEBUG)
 logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
@@ -368,6 +367,7 @@ def fail_on_log_exception(request, monkeypatch):
         raise
 
     monkeypatch.setattr("homeassistant.util.logging.log_exception", log_exception)
+
 
 @pytest.fixture
 def mock_zeroconf():

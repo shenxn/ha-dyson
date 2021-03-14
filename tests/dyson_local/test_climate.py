@@ -1,20 +1,49 @@
-from custom_components.dyson_local.climate import HVAC_MODES, SUPPORT_FLAGS
-from typing import Type
-from homeassistant.components.climate.const import ATTR_CURRENT_HUMIDITY, ATTR_CURRENT_TEMPERATURE, ATTR_HUMIDITY, ATTR_HVAC_ACTION, ATTR_HVAC_MODE, ATTR_HVAC_MODES, ATTR_MAX_TEMP, ATTR_MIN_TEMP, ATTR_TARGET_TEMP_HIGH, ATTR_TARGET_TEMP_LOW, CURRENT_HVAC_COOL, CURRENT_HVAC_HEAT, CURRENT_HVAC_IDLE, CURRENT_HVAC_OFF, HVAC_MODE_COOL, HVAC_MODE_HEAT, HVAC_MODE_OFF, SERVICE_SET_HVAC_MODE, SERVICE_SET_TEMPERATURE
-from libdyson.dyson_device import DysonDevice, DysonHeatingDevice
-from homeassistant.components.climate import DOMAIN as CLIMATE_DOMAIN
-from unittest.mock import MagicMock, patch
-from libdyson.const import ENVIRONMENTAL_INIT, MessageType
-import pytest
-from homeassistant.core import HomeAssistant
-from homeassistant.const import ATTR_ENTITY_ID, ATTR_SUPPORTED_FEATURES, ATTR_TEMPERATURE, CONF_HOST, CONF_NAME, STATE_OFF, STATE_ON
-from homeassistant.helpers import entity_registry
-from tests.common import MockConfigEntry
-from custom_components.dyson_local import DOMAIN
-from libdyson import DEVICE_TYPE_PURE_HOT_COOL, DEVICE_TYPE_PURE_HOT_COOL_LINK, DysonPureHotCool, DysonPureHotCoolLink
-from . import NAME, SERIAL, CREDENTIAL, HOST, MODULE, get_base_device, update_device
+"""Tests for Dyson climate platform."""
 
-DEVICE_TYPE = DEVICE_TYPE_PURE_HOT_COOL
+from unittest.mock import patch
+
+from libdyson import (
+    DEVICE_TYPE_PURE_HOT_COOL,
+    DEVICE_TYPE_PURE_HOT_COOL_LINK,
+    DysonPureHotCool,
+    DysonPureHotCoolLink,
+    MessageType,
+)
+from libdyson.const import ENVIRONMENTAL_INIT
+from libdyson.dyson_device import DysonHeatingDevice
+import pytest
+
+from custom_components.dyson_local.climate import HVAC_MODES, SUPPORT_FLAGS
+from homeassistant.components.climate import DOMAIN as CLIMATE_DOMAIN
+from homeassistant.components.climate.const import (
+    ATTR_CURRENT_HUMIDITY,
+    ATTR_CURRENT_TEMPERATURE,
+    ATTR_HVAC_ACTION,
+    ATTR_HVAC_MODE,
+    ATTR_HVAC_MODES,
+    ATTR_MAX_TEMP,
+    ATTR_MIN_TEMP,
+    ATTR_TARGET_TEMP_HIGH,
+    ATTR_TARGET_TEMP_LOW,
+    CURRENT_HVAC_COOL,
+    CURRENT_HVAC_HEAT,
+    CURRENT_HVAC_IDLE,
+    CURRENT_HVAC_OFF,
+    HVAC_MODE_COOL,
+    HVAC_MODE_HEAT,
+    HVAC_MODE_OFF,
+    SERVICE_SET_HVAC_MODE,
+    SERVICE_SET_TEMPERATURE,
+)
+from homeassistant.const import (
+    ATTR_ENTITY_ID,
+    ATTR_SUPPORTED_FEATURES,
+    ATTR_TEMPERATURE,
+)
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry
+
+from . import MODULE, NAME, SERIAL, get_base_device, update_device
 
 ENTITY_ID = f"climate.{NAME}"
 
@@ -26,6 +55,7 @@ ENTITY_ID = f"climate.{NAME}"
     ]
 )
 def device(request: pytest.FixtureRequest) -> DysonHeatingDevice:
+    """Return mocked device."""
     device = get_base_device(request.param[0], request.param[1])
     device.is_on = True
     device.heat_mode_is_on = True
@@ -38,6 +68,7 @@ def device(request: pytest.FixtureRequest) -> DysonHeatingDevice:
 
 
 async def test_state(hass: HomeAssistant, device: DysonHeatingDevice):
+    """Test entity state and attributes."""
     state = hass.states.get(ENTITY_ID)
     state.state == HVAC_MODE_HEAT
     attributes = state.attributes
@@ -87,11 +118,29 @@ async def test_state(hass: HomeAssistant, device: DysonHeatingDevice):
         (SERVICE_SET_TEMPERATURE, {ATTR_TEMPERATURE: 0}, "set_heat_target", [274]),
         (SERVICE_SET_TEMPERATURE, {ATTR_TEMPERATURE: 312}, "set_heat_target", [310]),
         (SERVICE_SET_HVAC_MODE, {ATTR_HVAC_MODE: HVAC_MODE_OFF}, "turn_off", []),
-        (SERVICE_SET_HVAC_MODE, {ATTR_HVAC_MODE: HVAC_MODE_HEAT}, "enable_heat_mode", []),
-        (SERVICE_SET_HVAC_MODE, {ATTR_HVAC_MODE: HVAC_MODE_COOL}, "disable_heat_mode", []),
-    ]
+        (
+            SERVICE_SET_HVAC_MODE,
+            {ATTR_HVAC_MODE: HVAC_MODE_HEAT},
+            "enable_heat_mode",
+            [],
+        ),
+        (
+            SERVICE_SET_HVAC_MODE,
+            {ATTR_HVAC_MODE: HVAC_MODE_COOL},
+            "disable_heat_mode",
+            [],
+        ),
+    ],
 )
-async def test_command(hass: HomeAssistant, device: DysonHeatingDevice, service: str, service_data: dict, command: str, command_args: list):
+async def test_command(
+    hass: HomeAssistant,
+    device: DysonHeatingDevice,
+    service: str,
+    service_data: dict,
+    command: str,
+    command_args: list,
+):
+    """Test platform services."""
     service_data[ATTR_ENTITY_ID] = ENTITY_ID
     await hass.services.async_call(CLIMATE_DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)
@@ -99,13 +148,22 @@ async def test_command(hass: HomeAssistant, device: DysonHeatingDevice, service:
 
 
 async def test_set_hvac_mode_off(hass: HomeAssistant, device: DysonHeatingDevice):
+    """Test setting HVAC mode to OFF."""
     device.is_on = False
-    await hass.services.async_call(CLIMATE_DOMAIN, SERVICE_SET_HVAC_MODE, {ATTR_ENTITY_ID: ENTITY_ID, ATTR_HVAC_MODE: HVAC_MODE_HEAT}, blocking=True)
+    await hass.services.async_call(
+        CLIMATE_DOMAIN,
+        SERVICE_SET_HVAC_MODE,
+        {ATTR_ENTITY_ID: ENTITY_ID, ATTR_HVAC_MODE: HVAC_MODE_HEAT},
+        blocking=True,
+    )
     device.turn_on.assert_called_once_with()
     device.enable_heat_mode.assert_called_once_with()
 
 
-async def test_set_temperature_invalid_data(hass: HomeAssistant, device: DysonHeatingDevice):
+async def test_set_temperature_invalid_data(
+    hass: HomeAssistant, device: DysonHeatingDevice
+):
+    """Test setting temperature with invalid data."""
     await hass.services.async_call(
         CLIMATE_DOMAIN,
         SERVICE_SET_TEMPERATURE,

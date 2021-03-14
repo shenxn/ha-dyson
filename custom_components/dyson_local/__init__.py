@@ -2,28 +2,39 @@
 
 import asyncio
 from datetime import timedelta
-import logging
 from functools import partial
+import logging
 from typing import List, Optional
 
-from homeassistant.exceptions import ConfigEntryNotReady
-from libdyson import DysonPureHotCoolLink, DysonPureHotCool, DysonPureHumidifyCool
+from libdyson import (
+    Dyson360Eye,
+    DysonPureHotCool,
+    DysonPureHotCoolLink,
+    DysonPureHumidifyCool,
+    MessageType,
+    get_device,
+)
 from libdyson.discovery import DysonDiscovery
 from libdyson.dyson_device import DysonDevice
 from libdyson.exceptions import DysonException
+
+from homeassistant.components.zeroconf import async_get_instance
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-    UpdateFailed,
-)
-from homeassistant.components.zeroconf import async_get_instance
-from libdyson import Dyson360Eye, get_device, MessageType
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import CONF_DEVICE_TYPE, DATA_COORDINATORS, DATA_DEVICES, DATA_DISCOVERY, DOMAIN, CONF_CREDENTIAL, CONF_SERIAL
+from .const import (
+    CONF_CREDENTIAL,
+    CONF_DEVICE_TYPE,
+    CONF_SERIAL,
+    DATA_COORDINATORS,
+    DATA_DEVICES,
+    DATA_DISCOVERY,
+    DOMAIN,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +58,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         entry.data[CONF_CREDENTIAL],
         entry.data[CONF_DEVICE_TYPE],
     )
-    
+
     if not isinstance(device, Dyson360Eye):
         # Set up coordinator
         async def async_update_data():
@@ -67,14 +78,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     else:
         coordinator = None
 
-
     async def _async_forward_entry_setup():
         for component in _async_get_platforms(device):
             hass.async_create_task(
                 hass.config_entries.async_forward_entry_setup(entry, component)
             )
 
-    def setup_entry(host: str, is_discovery: bool=True) -> bool:
+    def setup_entry(host: str, is_discovery: bool = True) -> bool:
         try:
             device.connect(host)
         except DysonException:
@@ -104,9 +114,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.data[DOMAIN][DATA_DISCOVERY] = discovery
             _LOGGER.debug("Starting dyson discovery")
             discovery.start_discovery(await async_get_instance(hass))
+
             def stop_discovery(_):
                 _LOGGER.debug("Stopping dyson discovery")
                 discovery.stop_discovery()
+
             hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, stop_discovery)
 
         await hass.async_add_executor_job(
@@ -148,10 +160,12 @@ def _async_get_platforms(device: DysonDevice) -> List[str]:
 
 
 class DysonEntity(Entity):
+    """Dyson entity base class."""
 
     _MESSAGE_TYPE = MessageType.STATE
 
     def __init__(self, device: DysonDevice, name: str):
+        """Initialize the entity."""
         self._device = device
         self._name = name
 

@@ -1,3 +1,5 @@
+"""Constants for Dyson Local."""
+
 DOMAIN = "dyson_local"
 
 CONF_SERIAL = "serial"

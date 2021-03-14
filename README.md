@@ -43,6 +43,14 @@ Dyson Cloud uses HTTP-based API to communicate with cloud service. Currently it 
 
 ## Setup
 
-It is recommended to set up Dyson Cloud first so that you don't need to manually get device credentials. To do so, go to __Configuration__ -> __Integrations__ and click the __+__ button. Then find Dyson Cloud. After successful setup, all devices under the account will be shown as discovered entities and you can then set up Dyson Local with single click. Leave host blank to using zeroconf discovery. After that, you can even remove Dyson Cloud entity if you don't need cleaning maps. All local devices that are already set up will remain untouched.
+### Setup using device WiFi information
+
+Version 0.6.1 introduced a new way to set up. This is inspired by https://community.home-assistant.io/t/dyson-pure-cool-link-local-mqtt-control/217263. Set up through UI and select "Setup using WiFi information". Find your device WiFi SSID and password on the sticker on your device body or user's manual (See the figure below). Don't fill in your home WiFi information. Note that this method only uses SSID and password to calculate serial, credential, and device type so you still need to setup your device on the official mobile app first.
+
+### Setup using Dyson cloud account
+
+You can also set up Dyson Cloud first so that you don't need to manually get device credentials. To do so, go to __Configuration__ -> __Integrations__ and click the __+__ button. Then find Dyson Cloud. After successful setup, all devices under the account will be shown as discovered entities and you can then set up Dyson Local with single click. Leave host blank to using zeroconf discovery. After that, you can even remove Dyson Cloud entity if you don't need cleaning maps. All local devices that are already set up will remain untouched.
+
+### Setup manually
 
 If you want to manually set up Dyson Local, you need to get credentials first. Clone or download https://github.com/shenxn/libdyson, then use `python3 get_devices.py` to do that. You may need to install some dependencies using `pip3 install -r requirements.txt`.

@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.components.sensor import DEVICE_CLASS_BATTERY
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import CoordinatorEntity, DataUpdateCoordinator
-from libdyson import DysonDevice, Dyson360Eye, DysonPureCoolLink, DysonPureCool
+from libdyson import DysonDevice, Dyson360Eye, DysonPureCoolLink, DysonPureCool, DysonPureHumidifyCool
 from libdyson.const import MessageType
 
 from . import DysonEntity
@@ -34,6 +34,10 @@ SENSORS = {
     "combined_filter_life": ("Filter Life", {
         ATTR_ICON: "mdi:filter-outline",
         ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
+    }),
+    "next_deep_clean": ("Next Deep Clean", {
+        ATTR_ICON: "mdi:filter-outline",
+        ATTR_UNIT_OF_MEASUREMENT: TIME_HOURS,
     }),
     "humidity": ("Humidity", {
         ATTR_DEVICE_CLASS: DEVICE_CLASS_HUMIDITY,
@@ -63,7 +67,7 @@ async def async_setup_entry(
         ]
         if isinstance(device, DysonPureCoolLink):
             entities.append(DysonFilterLifeSensor(device, name))
-        else:  # DysonPureCool
+        else:  # DysonPureCool or DysonPureHumidifyCool
             if device.carbon_filter_life is None:
                 entities.append(DysonCombinedFilterLifeSensor(device, name))
             else:
@@ -71,6 +75,8 @@ async def async_setup_entry(
                     DysonCarbonFilterLifeSensor(device, name),
                     DysonHEPAFilterLifeSensor(device, name),
                 ])
+        if isinstance(device, DysonPureHumidifyCool):
+            entities.append(DysonNextDeepCleanSensor(device, name))
     async_add_entities(entities)
 
 
@@ -174,6 +180,17 @@ class DysonCombinedFilterLifeSensor(DysonSensor):
     def state(self) -> int:
         """Return the state of the sensor."""
         return self._device.hepa_filter_life
+
+
+class DysonNextDeepCleanSensor(DysonSensor):
+    """Sensor of time until next deep clean (in hours) for Dyson Pure Humidify+Cool."""
+
+    _SENSOR_TYPE = "next_deep_clean"
+
+    @property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.time_until_next_clean
 
 
 class DysonHumiditySensor(DysonSensorEnvironmental):

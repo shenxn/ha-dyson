@@ -19,8 +19,22 @@ def device() -> DysonPureCool:
     device.speed = 5
     device.auto_mode = False
     device.oscillation = True
+    device.oscillation_angle_low = 10
+    device.oscillation_angle_high = 100
     with patch(f"{MODULE}._async_get_platforms", return_value=["fan"]):
         yield device
+
+
+async def test_state(hass: HomeAssistant, device: DysonPureCool):
+    attributes = hass.states.get(ENTITY_ID).attributes
+    assert attributes[ATTR_ANGLE_LOW] == 10
+    assert attributes[ATTR_ANGLE_HIGH] == 100
+    device.oscillation_angle_low = 50
+    device.oscillation_angle_high = 300
+    await update_device(hass, device, MessageType.STATE)
+    attributes = hass.states.get(ENTITY_ID).attributes
+    assert attributes[ATTR_ANGLE_LOW] == 50
+    assert attributes[ATTR_ANGLE_HIGH] == 300
 
 
 @pytest.mark.parametrize(

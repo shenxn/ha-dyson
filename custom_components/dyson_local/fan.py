@@ -207,6 +207,24 @@ class DysonPureCoolLinkEntity(DysonFanEntity):
 class DysonPureCoolEntity(DysonFanEntity):
     """Dyson Pure Cool entity."""
 
+    @property
+    def angle_low(self) -> int:
+        """Return oscillation angle low."""
+        return self._device.oscillation_angle_low
+    
+    @property
+    def angle_high(self) -> int:
+        """Return oscillation angle high."""
+        return self._device.oscillation_angle_high
+
+    @property
+    def device_state_attributes(self) -> dict:
+        """Return optional state attributes."""
+        return {
+            ATTR_ANGLE_LOW: self.angle_low,
+            ATTR_ANGLE_HIGH: self.angle_high,
+        }
+
     def set_angle(self, angle_low: int, angle_high: int) -> None:
         """Set oscillation angle."""
         _LOGGER.debug(

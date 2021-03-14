@@ -160,6 +160,8 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
     def set_timer(self, timer: int) -> None:
         """Set sleep timer."""
+        if timer == 0:
+            self._device.disable_sleep_timer()
         self._device.set_sleep_timer(timer)
 
 

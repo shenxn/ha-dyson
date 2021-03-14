@@ -81,7 +81,8 @@ async def test_command(hass: HomeAssistant, device: DysonFanDevice, service: str
 @pytest.mark.parametrize(
     "service,service_data,command,command_args",
     [
-        (SERVICE_SET_TIMER, {ATTR_TIMER: 50}, "set_sleep_timer", [50])
+        (SERVICE_SET_TIMER, {ATTR_TIMER: 0}, "disable_sleep_timer", []),
+        (SERVICE_SET_TIMER, {ATTR_TIMER: 50}, "set_sleep_timer", [50]),
     ]
 )
 async def test_service(hass: HomeAssistant, device: DysonFanDevice, service: str, service_data: dict, command: str, command_args: list):

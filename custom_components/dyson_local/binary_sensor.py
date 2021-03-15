@@ -15,6 +15,8 @@ from homeassistant.core import HomeAssistant
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
 
+ICON_BIN_FULL = "mdi:delete-variant"
+
 
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
@@ -32,8 +34,8 @@ class DysonVacuumBatteryChargingSensor(DysonEntity, BinarySensorEntity):
     """Dyson vacuum battery charging sensor."""
 
     @property
-    def state(self) -> bool:
-        """Return the state of the sensor."""
+    def is_on(self) -> bool:
+        """Return if the sensor is on."""
         return self._device.is_charging
 
     @property
@@ -46,21 +48,31 @@ class DysonVacuumBatteryChargingSensor(DysonEntity, BinarySensorEntity):
         """Return the name of the sensor."""
         return "Battery Charging"
 
+    @property
+    def sub_unique_id(self):
+        """Return the sensor's unique id."""
+        return "battery_charging"
+
 
 class Dyson360HeuristBinFullSensor(DysonEntity, BinarySensorEntity):
     """Dyson 360 Heurist bin full sensor."""
 
     @property
-    def state(self) -> bool:
-        """Return if the bin is full."""
+    def is_on(self) -> bool:
+        """Return if the sensor is on."""
         return self._device.is_bin_full
 
     @property
     def icon(self) -> str:
         """Return the sensor icon."""
-        return "mdi:delete-variant"
+        return ICON_BIN_FULL
 
     @property
     def sub_name(self) -> str:
         """Return the name of the sensor."""
         return "Bin Full"
+
+    @property
+    def sub_unique_id(self):
+        """Return the sensor's unique id."""
+        return "bin_full"

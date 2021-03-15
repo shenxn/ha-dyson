@@ -107,7 +107,7 @@ def _get_360_heurist() -> Dyson360Heurist:
 )
 async def test_sensors(
     hass: HomeAssistant,
-    device: DysonFanDevice,
+    device: DysonDevice,
     sensors: List[str],
 ):
     """Test sensor attributes."""

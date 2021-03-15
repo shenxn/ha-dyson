@@ -25,7 +25,7 @@ _LOGGER = logging.getLogger(__name__)
 AVAILABLE_MODES = [MODE_NORMAL, MODE_AUTO]
 
 MIN_HUMIDITY = 30  # Not sure about this
-MAX_HUMIDITY = 100  # Not sure about this
+MAX_HUMIDITY = 70  # Not sure about this
 
 SUPPORTED_FEATURES = SUPPORT_MODES
 

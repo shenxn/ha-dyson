@@ -86,7 +86,7 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
     @property
     def target_humidity(self) -> int:
         """Return the target."""
-        return self._device.humidity_target
+        return self._device.target_humidity
 
     @property
     def available_modes(self) -> List[str]:
@@ -113,7 +113,7 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
 
     def set_humidity(self, humidity: int) -> None:
         """Set target humidity."""
-        self._device.set_humidity_target(humidity)
+        self._device.set_target_humidity(humidity)
 
     def set_mode(self, mode: str) -> None:
         """Set humidification mode."""

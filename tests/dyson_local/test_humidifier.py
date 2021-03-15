@@ -58,7 +58,7 @@ def device() -> DysonPureHumidifyCool:
     device.air_quality_target = AirQualityTarget.GOOD
     device.humidification = True
     device.humidification_auto_mode = True
-    device.humidity_target = 50
+    device.target_humidity = 50
     with patch(f"{MODULE}._async_get_platforms", return_value=["humidifier"]):
         yield device
 
@@ -79,7 +79,7 @@ async def test_state(hass: HomeAssistant, device: DysonPureHumidifyCool):
     assert er.async_get(ENTITY_ID).unique_id == SERIAL
 
     device.humidification_auto_mode = False
-    device.humidity_target = 30
+    device.target_humidity = 30
     await update_device(hass, device, MessageType.STATE)
     attributes = hass.states.get(ENTITY_ID).attributes
     assert attributes[ATTR_MODE] == MODE_NORMAL
@@ -96,7 +96,7 @@ async def test_state(hass: HomeAssistant, device: DysonPureHumidifyCool):
     [
         (SERVICE_TURN_ON, {}, "enable_humidification", []),
         (SERVICE_TURN_OFF, {}, "disable_humidification", []),
-        (SERVICE_SET_HUMIDITY, {ATTR_HUMIDITY: 30}, "set_humidity_target", [30]),
+        (SERVICE_SET_HUMIDITY, {ATTR_HUMIDITY: 30}, "set_target_humidity", [30]),
         (
             SERVICE_SET_MODE,
             {ATTR_MODE: MODE_AUTO},

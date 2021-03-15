@@ -2,7 +2,13 @@
 
 from typing import Callable
 
-from libdyson import Dyson360Eye, DysonDevice, DysonPureCoolLink, DysonPureHumidifyCool
+from libdyson import (
+    Dyson360Eye,
+    Dyson360Heurist,
+    DysonDevice,
+    DysonPureCoolLink,
+    DysonPureHumidifyCool,
+)
 from libdyson.const import MessageType
 
 from homeassistant.components.sensor import DEVICE_CLASS_BATTERY
@@ -93,7 +99,7 @@ async def async_setup_entry(
     """Set up Dyson sensor from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
-    if isinstance(device, Dyson360Eye):
+    if isinstance(device, Dyson360Eye) or isinstance(device, Dyson360Heurist):
         entities = [DysonBatterySensor(device, name)]
     else:
         coordinator = hass.data[DOMAIN][DATA_COORDINATORS][config_entry.entry_id]

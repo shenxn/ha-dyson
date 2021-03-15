@@ -2,7 +2,12 @@
 
 from typing import Callable, List
 
-from libdyson.dyson_360_eye import VacuumPowerMode, VacuumState
+from libdyson import (
+    Dyson360Eye,
+    VacuumEyePowerMode,
+    VacuumHeuristPowerMode,
+    VacuumState,
+)
 
 from homeassistant.components.vacuum import (
     ATTR_STATUS,
@@ -26,7 +31,7 @@ from homeassistant.core import HomeAssistant
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
 
-SUPPORT_360_EYE = (
+SUPPORTED_FEATURES = (
     SUPPORT_START
     | SUPPORT_PAUSE
     | SUPPORT_RETURN_HOME
@@ -106,6 +111,22 @@ DYSON_STATES = {
     VacuumState.MAPPING_RUNNING: STATE_CLEANING,
 }
 
+EYE_POWER_MODE_ENUM_TO_STR = {
+    VacuumEyePowerMode.QUIET: "Quiet",
+    VacuumEyePowerMode.MAX: "Max",
+}
+EYE_POWER_MODE_STR_TO_ENUM = {
+    value: key for key, value in EYE_POWER_MODE_ENUM_TO_STR.items()
+}
+HEURIST_POWER_MODE_ENUM_TO_STR = {
+    VacuumHeuristPowerMode.QUIET: "Quiet",
+    VacuumHeuristPowerMode.HIGH: "High",
+    VacuumHeuristPowerMode.MAX: "Max",
+}
+HEURIST_POWER_MODE_STR_TO_ENUM = {
+    value: key for key, value in HEURIST_POWER_MODE_ENUM_TO_STR.items()
+}
+
 ATTR_POSITION = "position"
 
 
@@ -114,12 +135,16 @@ async def async_setup_entry(
 ) -> None:
     """Set up Dyson vacuum from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
-    entity = Dyson360EyeEntity(device, config_entry.data[CONF_NAME])
+    name = config_entry.data[CONF_NAME]
+    if isinstance(device, Dyson360Eye):
+        entity = Dyson360EyeEntity(device, name)
+    else:  # Dyson360Heurist
+        entity = Dyson360HeuristEntity(device, name)
     async_add_entities([entity])
 
 
-class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
-    """Dyson 360 Eye robot vacuum entity."""
+class DysonVacuumEntity(DysonEntity, StateVacuumEntity):
+    """Dyson vacuum entity base class."""
 
     @property
     def state(self) -> str:
@@ -137,17 +162,6 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
         return self._device.battery_level
 
     @property
-    def fan_speed(self) -> str:
-        """Return the fan speed of the vacuum cleaner."""
-        fan_speed = "Max" if self._device.power_mode == VacuumPowerMode.MAX else "Quiet"
-        return fan_speed
-
-    @property
-    def fan_speed_list(self) -> List[str]:
-        """Get the list of available fan speed steps of the vacuum cleaner."""
-        return ["Quiet", "Max"]
-
-    @property
     def available(self) -> bool:
         """Return True if entity is available."""
         return self._device.is_connected
@@ -155,7 +169,7 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
     @property
     def supported_features(self) -> int:
         """Flag vacuum cleaner robot features that are supported."""
-        return SUPPORT_360_EYE
+        return SUPPORTED_FEATURES
 
     @property
     def device_state_attributes(self) -> dict:
@@ -165,13 +179,6 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
             ATTR_STATUS: self.status,
         }
 
-    def start(self) -> None:
-        """Start the device."""
-        if self.state == STATE_PAUSED:
-            self._device.resume()
-        else:
-            self._device.start()
-
     def pause(self) -> None:
         """Pause the device."""
         self._device.pause()
@@ -180,9 +187,52 @@ class Dyson360EyeEntity(DysonEntity, StateVacuumEntity):
         """Return the device to base."""
         self._device.abort()
 
+
+class Dyson360EyeEntity(DysonVacuumEntity):
+    """Dyson 360 Eye robot vacuum entity."""
+
+    @property
+    def fan_speed(self) -> str:
+        """Return the fan speed of the vacuum cleaner."""
+        return EYE_POWER_MODE_ENUM_TO_STR[self._device.power_mode]
+
+    @property
+    def fan_speed_list(self) -> List[str]:
+        """Get the list of available fan speed steps of the vacuum cleaner."""
+        return list(EYE_POWER_MODE_STR_TO_ENUM.keys())
+
+    def start(self) -> None:
+        """Start the device."""
+        if self.state == STATE_PAUSED:
+            self._device.resume()
+        else:
+            self._device.start()
+
     def set_fan_speed(self, fan_speed: str, **kwargs) -> None:
         """Set fan speed."""
-        power_mode = (
-            VacuumPowerMode.MAX if fan_speed == "Max" else VacuumPowerMode.QUIET
-        )
-        self._device.set_power_mode(power_mode)
+        self._device.set_power_mode(EYE_POWER_MODE_STR_TO_ENUM[fan_speed])
+
+
+class Dyson360HeuristEntity(DysonVacuumEntity):
+    """Dyson 360 Heurist robot vacuum entity."""
+
+    @property
+    def fan_speed(self) -> str:
+        """Return the fan speed of the vacuum cleaner."""
+        return HEURIST_POWER_MODE_ENUM_TO_STR[self._device.current_power_mode]
+
+    @property
+    def fan_speed_list(self) -> List[str]:
+        """Get the list of available fan speed steps of the vacuum cleaner."""
+        return list(HEURIST_POWER_MODE_STR_TO_ENUM.keys())
+
+    def start(self) -> None:
+        """Start the device."""
+        if self.state == STATE_PAUSED:
+            self._device.resume()
+        else:
+            self._device.start_all_zones()
+
+    def set_fan_speed(self, fan_speed: str, **kwargs) -> None:
+        """Set fan speed."""
+        self._device.set_default_power_mode(HEURIST_POWER_MODE_STR_TO_ENUM[fan_speed])

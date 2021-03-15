@@ -4,19 +4,18 @@ from typing import List, Type
 from unittest.mock import patch
 
 from libdyson import (
+    DEVICE_TYPE_360_EYE,
+    DEVICE_TYPE_360_HEURIST,
     DEVICE_TYPE_PURE_COOL,
+    DEVICE_TYPE_PURE_COOL_LINK,
     DEVICE_TYPE_PURE_HUMIDIFY_COOL,
     Dyson360Eye,
+    Dyson360Heurist,
     DysonPureCool,
     DysonPureCoolLink,
     DysonPureHumidifyCool,
 )
-from libdyson.const import (
-    DEVICE_TYPE_360_EYE,
-    DEVICE_TYPE_PURE_COOL_LINK,
-    ENVIRONMENTAL_OFF,
-    MessageType,
-)
+from libdyson.const import ENVIRONMENTAL_OFF, MessageType
 from libdyson.dyson_device import DysonDevice, DysonFanDevice
 import pytest
 
@@ -82,6 +81,12 @@ def _get_360_eye() -> Dyson360Eye:
     return device
 
 
+def _get_360_heurist() -> Dyson360Heurist:
+    device = get_base_device(Dyson360Heurist, DEVICE_TYPE_360_HEURIST)
+    device.battery_level = 80
+    return device
+
+
 @pytest.mark.parametrize(
     "device,sensors",
     [
@@ -96,6 +101,7 @@ def _get_360_eye() -> Dyson360Eye:
             ["humidity", "temperature", "combined_filter_life", "next_deep_clean"],
         ),
         (_get_360_eye, ["battery_level"]),
+        (_get_360_heurist, ["battery_level"]),
     ],
     indirect=["device"],
 )
@@ -181,8 +187,17 @@ async def test_pure_humidify_cool(hass: HomeAssistant, device: DysonPureHumidify
 
 
 @pytest.mark.parametrize("device", [_get_360_eye], indirect=True)
-async def test_360_eye(hass: HomeAssistant, device: DysonFanDevice):
+async def test_360_eye(hass: HomeAssistant, device: Dyson360Eye):
     """Test 360 Eye sensors."""
+    assert hass.states.get(f"sensor.{NAME}_battery_level").state == "80"
+    device.battery_level = 40
+    await update_device(hass, device, MessageType.STATE)
+    assert hass.states.get(f"sensor.{NAME}_battery_level").state == "40"
+
+
+@pytest.mark.parametrize("device", [_get_360_heurist], indirect=True)
+async def test_360_heurist(hass: HomeAssistant, device: Dyson360Heurist):
+    """Test 360 Heurist sensors."""
     assert hass.states.get(f"sensor.{NAME}_battery_level").state == "80"
     device.battery_level = 40
     await update_device(hass, device, MessageType.STATE)

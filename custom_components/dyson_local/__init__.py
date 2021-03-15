@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from libdyson import (
     Dyson360Eye,
+    Dyson360Heurist,
     DysonPureHotCool,
     DysonPureHotCoolLink,
     DysonPureHumidifyCool,
@@ -149,7 +150,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 @callback
 def _async_get_platforms(device: DysonDevice) -> List[str]:
-    if isinstance(device, Dyson360Eye):
+    if isinstance(device, Dyson360Eye) or isinstance(device, Dyson360Heurist):
         return ["binary_sensor", "sensor", "vacuum"]
     platforms = ["air_quality", "fan", "sensor", "switch"]
     if isinstance(device, DysonPureHotCool) or isinstance(device, DysonPureHotCoolLink):

@@ -2,6 +2,8 @@
 
 from typing import Callable
 
+from libdyson import Dyson360Heurist
+
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_BATTERY_CHARGING,
     BinarySensorEntity,
@@ -19,12 +21,15 @@ async def async_setup_entry(
 ) -> None:
     """Set up Dyson binary sensor from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
-    entity = Dyson360EyeBatteryChargingSensor(device, config_entry.data[CONF_NAME])
-    async_add_entities([entity])
+    name = config_entry.data[CONF_NAME]
+    entities = [DysonVacuumBatteryChargingSensor(device, name)]
+    if isinstance(device, Dyson360Heurist):
+        entities.append(Dyson360HeuristBinFullSensor(device, name))
+    async_add_entities(entities)
 
 
-class Dyson360EyeBatteryChargingSensor(DysonEntity, BinarySensorEntity):
-    """Dyson 360 eye battery charging sensor."""
+class DysonVacuumBatteryChargingSensor(DysonEntity, BinarySensorEntity):
+    """Dyson vacuum battery charging sensor."""
 
     @property
     def state(self) -> bool:
@@ -40,3 +45,22 @@ class Dyson360EyeBatteryChargingSensor(DysonEntity, BinarySensorEntity):
     def sub_name(self) -> str:
         """Return the name of the sensor."""
         return "Battery Charging"
+
+
+class Dyson360HeuristBinFullSensor(DysonEntity, BinarySensorEntity):
+    """Dyson 360 Heurist bin full sensor."""
+
+    @property
+    def state(self) -> bool:
+        """Return if the bin is full."""
+        return self._device.is_bin_full
+
+    @property
+    def icon(self) -> str:
+        """Return the sensor icon."""
+        return "mdi:delete-variant"
+
+    @property
+    def sub_name(self) -> str:
+        """Return the name of the sensor."""
+        return "Bin Full"

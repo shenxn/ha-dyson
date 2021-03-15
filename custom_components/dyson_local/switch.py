@@ -2,7 +2,7 @@
 
 from typing import Callable
 
-from libdyson import DysonPureCool
+from libdyson import DysonPureCool, DysonPureHumidifyCool
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -24,7 +24,7 @@ async def async_setup_entry(
         DysonContinuousMonitoringSwitchEntity(device, name),
         DysonAutoModeSwitchEntity(device, name),
     ]
-    if isinstance(device, DysonPureCool):
+    if isinstance(device, DysonPureCool) or isinstance(device, DysonPureHumidifyCool):
         entities.append(DysonFrontAirflowSwitchEntity(device, name))
     async_add_entities(entities)
 

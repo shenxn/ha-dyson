@@ -29,7 +29,7 @@ async def async_setup_entry(
     name = config_entry.data[CONF_NAME]
     if isinstance(device, DysonPureCoolLink):
         entities = [DysonPureCoolLinkAirQualityEntity(coordinator, device, name)]
-    else:  # DysonPureCool
+    else:  # DysonPureCool or DysonPureHumidifyCool
         entities = [DysonPureCoolAirQualityEntity(coordinator, device, name)]
     async_add_entities(entities)
 

@@ -140,7 +140,7 @@ class DysonFanEntity(DysonEntity, FanEntity):
     @property
     def percentage(self) -> Optional[int]:
         """Return the current speed percentage."""
-        if self._device.auto_mode:
+        if self._device.speed is None:
             return None
         return ranged_value_to_percentage(SPEED_RANGE, int(self._device.speed))
 

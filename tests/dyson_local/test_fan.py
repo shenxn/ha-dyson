@@ -66,12 +66,12 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
 
     device.is_on = False
     device.speed = None
-    device.auto_mode = True
     device.oscillation = False
     await update_device(hass, device, MessageType.STATE)
     state = hass.states.get(ENTITY_ID)
     assert state.state == STATE_OFF
     attributes = state.attributes
+    assert attributes[ATTR_PERCENTAGE] is None
     assert attributes[ATTR_OSCILLATING] is False
 
 

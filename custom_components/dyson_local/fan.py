@@ -30,6 +30,7 @@ from .const import DATA_DEVICES
 _LOGGER = logging.getLogger(__name__)
 
 AIR_QUALITY_TARGET_ENUM_TO_STR = {
+    AirQualityTarget.OFF: "off",
     AirQualityTarget.GOOD: "good",
     AirQualityTarget.DEFAULT: "default",
     AirQualityTarget.SENSITIVE: "sensitive",

@@ -96,6 +96,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     host,
                 )
                 return
+            device.disconnect()
             raise ConfigEntryNotReady
         hass.data[DOMAIN][DATA_DEVICES][entry.entry_id] = device
         hass.data[DOMAIN][DATA_COORDINATORS][entry.entry_id] = coordinator

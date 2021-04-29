@@ -27,6 +27,7 @@ There are two integrations, Dyson Local and Dyson Cloud. Due to the limitation o
 Dyson Local uses MQTT-based protocol to communicate with local Dyson devices using credentials. Currently it supports
 
 - Dyson 360 Eye robot vacuum
+- Dyson 360 Heurist robot vacuum
 - Dyson Pure Cool
 - Dyson Pure Cool Desk
 - Dyson Pure Cool Link

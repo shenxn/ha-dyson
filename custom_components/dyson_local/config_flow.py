@@ -214,6 +214,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     ) -> Optional[str]:
         """Try connect and return config entry data."""
         device = get_device(serial, credential, device_type)
+        saved_host = host
 
         # Find device using discovery
         if not host:
@@ -250,7 +251,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             CONF_CREDENTIAL: credential,
             CONF_DEVICE_TYPE: device_type,
             CONF_NAME: name,
-            CONF_HOST: host,
+            CONF_HOST: saved_host,
         }
 
 

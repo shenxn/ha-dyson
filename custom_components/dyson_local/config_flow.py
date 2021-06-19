@@ -213,8 +213,24 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         host: Optional[str] = None,
     ) -> Optional[str]:
         """Try connect and return config entry data."""
+        await self._async_try_connect(serial, credential, device_type, host)
+        return {
+            CONF_SERIAL: serial,
+            CONF_CREDENTIAL: credential,
+            CONF_DEVICE_TYPE: device_type,
+            CONF_NAME: name,
+            CONF_HOST: host,
+        }
+
+    async def _async_try_connect(
+        self,
+        serial: str,
+        credential: str,
+        device_type: str,
+        host: Optional[str] = None,
+    ) -> None:
+        """Try connect."""
         device = get_device(serial, credential, device_type)
-        saved_host = host
 
         # Find device using discovery
         if not host:
@@ -245,14 +261,6 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         except DysonException as err:
             _LOGGER.debug("Failed to connect to device: %s", err)
             raise CannotConnect
-
-        return {
-            CONF_SERIAL: serial,
-            CONF_CREDENTIAL: credential,
-            CONF_DEVICE_TYPE: device_type,
-            CONF_NAME: name,
-            CONF_HOST: saved_host,
-        }
 
 
 class CannotConnect(HomeAssistantError):

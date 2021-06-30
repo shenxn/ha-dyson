@@ -55,3 +55,15 @@ You can also set up Dyson Cloud first so that you don't need to manually get dev
 ### Setup manually
 
 If you want to manually set up Dyson Local, you need to get credentials first. Clone or download https://github.com/shenxn/libdyson, then use `python3 get_devices.py` to do that. You may need to install some dependencies using `pip3 install -r requirements.txt`.
+
+## Debug Log
+
+To enable debug log, add the following lines to your `configuration.yaml` and restart your HomeAssistant.
+```yaml
+logger:
+  default: info
+  logs:
+    libdyson: debug
+    custom_components.dyson_local: debug
+    custom_components.dyson_cloud: debug
+```

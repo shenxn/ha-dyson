@@ -67,3 +67,9 @@ logger:
     custom_components.dyson_local: debug
     custom_components.dyson_cloud: debug
 ```
+
+## FAQ
+
+### I got "not a valid add-on repository" when I try to add this repo
+
+This is a **custom integration** not a **custom add-on**. You need to install [HACS](https://hacs.xyz/) and add this repo there.

@@ -1,7 +1,6 @@
 """Humidifier platform for Dyson."""
 
-import logging
-from typing import Callable, List
+from typing import Callable, List, Optional
 
 from libdyson import MessageType, WaterHardness
 import voluptuous as vol
@@ -19,8 +18,6 @@ from homeassistant.helpers import entity_platform
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
 
 AVAILABLE_MODES = [MODE_NORMAL, MODE_AUTO]
 
@@ -84,8 +81,11 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
         return MAX_HUMIDITY
 
     @property
-    def target_humidity(self) -> int:
+    def target_humidity(self) -> Optional[int]:
         """Return the target."""
+        if self._device.humidification_auto_mode:
+            return None
+
         return self._device.target_humidity
 
     @property
@@ -114,6 +114,7 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
     def set_humidity(self, humidity: int) -> None:
         """Set target humidity."""
         self._device.set_target_humidity(humidity)
+        self.set_mode(MODE_NORMAL)
 
     def set_mode(self, mode: str) -> None:
         """Set humidification mode."""
@@ -121,7 +122,8 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
             self._device.enable_humidification_auto_mode()
         elif mode == MODE_NORMAL:
             self._device.disable_humidification_auto_mode()
-        _LOGGER.error("%s is not a valid mode.", mode)
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
 
     def set_water_hardness(self, water_hardness: str) -> None:
         """Set water hardness."""

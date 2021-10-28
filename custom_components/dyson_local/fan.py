@@ -2,7 +2,7 @@
 
 import logging
 import math
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 
 from libdyson import (
     DysonPureCool,
@@ -13,7 +13,13 @@ from libdyson import (
 from libdyson.const import AirQualityTarget
 import voluptuous as vol
 
-from homeassistant.components.fan import SUPPORT_OSCILLATE, SUPPORT_SET_SPEED, FanEntity
+from homeassistant.components.fan import (
+    SUPPORT_OSCILLATE,
+    SUPPORT_SET_SPEED,
+    SUPPORT_PRESET_MODE,
+    FanEntity,
+    NotValidPresetModeError,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
@@ -77,14 +83,13 @@ SET_TIMER_SCHEMA = {
     vol.Required(ATTR_TIMER): cv.positive_int,
 }
 
-SPEED_LIST_DYSON = list(range(1, 11))  # 1, 2, ..., 10
+PRESET_MODE_AUTO = "Auto"
 
-SPEED_RANGE = (
-    SPEED_LIST_DYSON[0],
-    SPEED_LIST_DYSON[-1],
-)
+SUPPORTED_PRESET_MODES = [PRESET_MODE_AUTO]
 
-SUPPORTED_FEATURES = SUPPORT_OSCILLATE | SUPPORT_SET_SPEED
+SPEED_RANGE = (1, 10)
+
+SUPPORTED_FEATURES = SUPPORT_OSCILLATE | SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
 
 
 async def async_setup_entry(
@@ -134,8 +139,13 @@ class DysonFanEntity(DysonEntity, FanEntity):
         return self._device.is_on
 
     @property
+    def speed(self) -> None:
+        """Return None for compatibility with pre-preset_mode state."""
+        return None
+
+    @property
     def speed_count(self) -> int:
-        """Return the number of speeds the fan supports."""
+        """Return the number of different speeds the fan can be set to."""
         return int_states_in_range(SPEED_RANGE)
 
     @property
@@ -144,6 +154,34 @@ class DysonFanEntity(DysonEntity, FanEntity):
         if self._device.speed is None:
             return None
         return ranged_value_to_percentage(SPEED_RANGE, int(self._device.speed))
+
+    def set_percentage(self, percentage: int) -> None:
+        """Set the speed percentage of the fan."""
+        if percentage == 0 and not self._device.auto_mode:
+            self._device.turn_off()
+            return
+
+        dyson_speed = math.ceil(percentage_to_ranged_value(SPEED_RANGE, percentage))
+        self._device.set_speed(dyson_speed)
+
+    @property
+    def preset_modes(self) -> List[str]:
+        return SUPPORTED_PRESET_MODES
+
+    @property
+    def preset_mode(self) -> Optional[str]:
+        if self._device.auto_mode:
+            return PRESET_MODE_AUTO
+        return None
+
+    def set_preset_mode(self, preset_mode: Optional[str]) -> None:
+        """Configure the preset mode."""
+        if preset_mode is None:
+            self._device.disable_auto_mode()
+        elif preset_mode == PRESET_MODE_AUTO:
+            self._device.enable_auto_mode()
+        else:
+            raise NotValidPresetModeError(f"Invalid preset mode: {preset_mode}")
 
     @property
     def oscillating(self):
@@ -164,21 +202,16 @@ class DysonFanEntity(DysonEntity, FanEntity):
     ) -> None:
         """Turn on the fan."""
         _LOGGER.debug("Turn on fan %s with percentage %s", self.name, percentage)
-        if percentage is None:
-            # percentage not set, just turn on
-            self._device.turn_on()
-        else:
+        self.set_preset_mode(preset_mode)
+        if percentage is not None:
             self.set_percentage(percentage)
+
+        self._device.turn_on()
 
     def turn_off(self, **kwargs) -> None:
         """Turn off the fan."""
         _LOGGER.debug("Turn off fan %s", self.name)
         return self._device.turn_off()
-
-    def set_percentage(self, percentage: int) -> None:
-        """Set the speed percentage of the fan."""
-        dyson_speed = math.ceil(percentage_to_ranged_value(SPEED_RANGE, percentage))
-        self._device.set_speed(dyson_speed)
 
     def oscillate(self, oscillating: bool) -> None:
         """Turn on/of oscillation."""

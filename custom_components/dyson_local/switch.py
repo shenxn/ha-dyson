@@ -22,7 +22,6 @@ async def async_setup_entry(
     entities = [
         DysonNightModeSwitchEntity(device, name),
         DysonContinuousMonitoringSwitchEntity(device, name),
-        DysonAutoModeSwitchEntity(device, name),
     ]
     if isinstance(device, DysonPureCool) or isinstance(device, DysonPureHumidifyCool):
         entities.append(DysonFrontAirflowSwitchEntity(device, name))
@@ -91,38 +90,6 @@ class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
     def turn_off(self):
         """Turn off continuous monitoring."""
         return self._device.disable_continuous_monitoring()
-
-
-class DysonAutoModeSwitchEntity(DysonEntity, SwitchEntity):
-    """Dyson auto mode switch."""
-
-    @property
-    def sub_name(self):
-        """Return the name of the entity."""
-        return "Auto Mode"
-
-    @property
-    def sub_unique_id(self):
-        """Return the unique id of the entity."""
-        return "auto_mode"
-
-    @property
-    def icon(self):
-        """Return the icon of the entity."""
-        return "mdi:fan-auto"
-
-    @property
-    def is_on(self):
-        """Return if auto mode is on."""
-        return self._device.auto_mode
-
-    def turn_on(self):
-        """Turn on auto mode."""
-        return self._device.enable_auto_mode()
-
-    def turn_off(self):
-        """Turn off auto mode."""
-        return self._device.disable_auto_mode()
 
 
 class DysonFrontAirflowSwitchEntity(DysonEntity, SwitchEntity):

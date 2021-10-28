@@ -1,6 +1,6 @@
 """Sensor platform for dyson."""
 
-from typing import Callable
+from typing import Callable, Union
 
 from libdyson import (
     Dyson360Eye,
@@ -201,6 +201,7 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "temperature"
     _SENSOR_NAME = "Temperature"
     _attr_device_class = DEVICE_CLASS_TEMPERATURE
+    _attr_unit_of_measurement = TEMP_CELSIUS
 
     @environmental_property
     def temperature_kelvin(self) -> int:
@@ -208,16 +209,15 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
         return self._device.temperature
 
     @property
-    def state(self) -> int:
-        """Return the state of the sensor."""
+    def native_value(self) -> Union[str, float]:
+        """Return the "native" value for this sensor.
+
+        Note that as of 2021-10-28, Home Assistant does not support converting
+        from Kelvin native unit to Celsius/Fahrenheit. So we return the Celsius
+        value as it's the easiest to calculate.
+        """
         temperature_kelvin = self.temperature_kelvin
         if isinstance(temperature_kelvin, str):
             return temperature_kelvin
-        if self.hass.config.units.temperature_unit == TEMP_CELSIUS:
-            return float(f"{(temperature_kelvin - 273.15):.1f}")
-        return float(f"{(temperature_kelvin * 9 / 5 - 459.67):.1f}")
 
-    @property
-    def unit_of_measurement(self):
-        """Return the unit the value is expressed in."""
-        return self.hass.config.units.temperature_unit
+        return temperature_kelvin - 273.15

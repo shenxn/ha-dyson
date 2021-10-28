@@ -11,12 +11,9 @@ from libdyson import (
 )
 from libdyson.const import MessageType
 
-from homeassistant.components.sensor import DEVICE_CLASS_BATTERY
+from homeassistant.components.sensor import DEVICE_CLASS_BATTERY, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    ATTR_DEVICE_CLASS,
-    ATTR_ICON,
-    ATTR_UNIT_OF_MEASUREMENT,
     CONF_NAME,
     DEVICE_CLASS_HUMIDITY,
     DEVICE_CLASS_TEMPERATURE,
@@ -33,64 +30,6 @@ from homeassistant.helpers.update_coordinator import (
 from . import DysonEntity
 from .const import DATA_COORDINATORS, DATA_DEVICES, DOMAIN
 from .utils import environmental_property
-
-SENSORS = {
-    "battery_level": (
-        "Battery Level",
-        {
-            ATTR_DEVICE_CLASS: DEVICE_CLASS_BATTERY,
-            ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
-        },
-    ),
-    "filter_life": (
-        "Filter Life",
-        {
-            ATTR_ICON: "mdi:filter-outline",
-            ATTR_UNIT_OF_MEASUREMENT: TIME_HOURS,
-        },
-    ),
-    "carbon_filter_life": (
-        "Carbon Filter Life",
-        {
-            ATTR_ICON: "mdi:filter-outline",
-            ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
-        },
-    ),
-    "hepa_filter_life": (
-        "HEPA Filter Life",
-        {
-            ATTR_ICON: "mdi:filter-outline",
-            ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
-        },
-    ),
-    "combined_filter_life": (
-        "Filter Life",
-        {
-            ATTR_ICON: "mdi:filter-outline",
-            ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
-        },
-    ),
-    "next_deep_clean": (
-        "Next Deep Clean",
-        {
-            ATTR_ICON: "mdi:filter-outline",
-            ATTR_UNIT_OF_MEASUREMENT: TIME_HOURS,
-        },
-    ),
-    "humidity": (
-        "Humidity",
-        {
-            ATTR_DEVICE_CLASS: DEVICE_CLASS_HUMIDITY,
-            ATTR_UNIT_OF_MEASUREMENT: PERCENTAGE,
-        },
-    ),
-    "temperature": (
-        "Temperature",
-        {
-            ATTR_DEVICE_CLASS: DEVICE_CLASS_TEMPERATURE,
-        },
-    ),
-}
 
 
 async def async_setup_entry(
@@ -124,42 +63,25 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class DysonSensor(DysonEntity):
-    """Generic Dyson sensor."""
+class DysonSensor(SensorEntity, DysonEntity):
 
     _MESSAGE_TYPE = MessageType.STATE
     _SENSOR_TYPE = None
+    _SENSOR_NAME = None
 
     def __init__(self, device: DysonDevice, name: str):
         """Initialize the sensor."""
         super().__init__(device, name)
-        self._old_value = None
-        self._sensor_name, self._attributes = SENSORS[self._SENSOR_TYPE]
 
     @property
     def sub_name(self):
         """Return the name of the Dyson sensor."""
-        return self._sensor_name
+        return self._SENSOR_NAME
 
     @property
     def sub_unique_id(self):
         """Return the sensor's unique id."""
         return self._SENSOR_TYPE
-
-    @property
-    def unit_of_measurement(self):
-        """Return the unit the value is expressed in."""
-        return self._attributes.get(ATTR_UNIT_OF_MEASUREMENT)
-
-    @property
-    def icon(self):
-        """Return the icon for this sensor."""
-        return self._attributes.get(ATTR_ICON)
-
-    @property
-    def device_class(self):
-        """Return the device class of this sensor."""
-        return self._attributes.get(ATTR_DEVICE_CLASS)
 
 
 class DysonSensorEnvironmental(CoordinatorEntity, DysonSensor):
@@ -179,6 +101,9 @@ class DysonBatterySensor(DysonSensor):
     """Dyson battery sensor."""
 
     _SENSOR_TYPE = "battery_level"
+    _SENSOR_NAME = "Battery Level"
+    _attr_device_class = DEVICE_CLASS_BATTERY
+    _attr_unit_of_measurement = PERCENTAGE
 
     @property
     def state(self) -> int:
@@ -190,6 +115,9 @@ class DysonFilterLifeSensor(DysonSensor):
     """Dyson filter life sensor (in hours) for Pure Cool Link."""
 
     _SENSOR_TYPE = "filter_life"
+    _SENSOR_NAME = "Filter Life"
+    _attr_icon = "mdi:filter-outline"
+    _attr_unit_of_measurement = TIME_HOURS
 
     @property
     def state(self) -> int:
@@ -201,6 +129,9 @@ class DysonCarbonFilterLifeSensor(DysonSensor):
     """Dyson carbon filter life sensor (in percentage) for Pure Cool."""
 
     _SENSOR_TYPE = "carbon_filter_life"
+    _SENSOR_NAME = "Carbon Filter Life"
+    _attr_icon = "mdi:filter-outline"
+    _attr_unit_of_measurement = PERCENTAGE
 
     @property
     def state(self) -> int:
@@ -212,6 +143,9 @@ class DysonHEPAFilterLifeSensor(DysonSensor):
     """Dyson HEPA filter life sensor (in percentage) for Pure Cool."""
 
     _SENSOR_TYPE = "hepa_filter_life"
+    _SENSOR_NAME = "HEPA Filter Life"
+    _attr_icon = "mdi:filter-outline"
+    _attr_unit_of_measurement = PERCENTAGE
 
     @property
     def state(self) -> int:
@@ -223,6 +157,9 @@ class DysonCombinedFilterLifeSensor(DysonSensor):
     """Dyson combined filter life sensor (in percentage) for Pure Cool."""
 
     _SENSOR_TYPE = "combined_filter_life"
+    _SENSOR_NAME = "Filter Life"
+    _attr_icon = "mdi:filter-outline"
+    _attr_unit_of_measurement = PERCENTAGE
 
     @property
     def state(self) -> int:
@@ -234,6 +171,9 @@ class DysonNextDeepCleanSensor(DysonSensor):
     """Sensor of time until next deep clean (in hours) for Dyson Pure Humidify+Cool."""
 
     _SENSOR_TYPE = "next_deep_clean"
+    _SENSOR_NAME = "Next Deep Clean"
+    _attr_icon = "mdi:filter-outline"
+    _attr_unit_of_measurement = TIME_HOURS
 
     @property
     def state(self) -> int:
@@ -245,6 +185,9 @@ class DysonHumiditySensor(DysonSensorEnvironmental):
     """Dyson humidity sensor."""
 
     _SENSOR_TYPE = "humidity"
+    _SENSOR_NAME = "Humidity"
+    _attr_device_class = DEVICE_CLASS_HUMIDITY
+    _attr_unit_of_measurement = PERCENTAGE
 
     @environmental_property
     def state(self) -> int:
@@ -256,6 +199,8 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
     """Dyson temperature sensor."""
 
     _SENSOR_TYPE = "temperature"
+    _SENSOR_NAME = "Temperature"
+    _attr_device_class = DEVICE_CLASS_TEMPERATURE
 
     @environmental_property
     def temperature_kelvin(self) -> int:

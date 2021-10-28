@@ -10,8 +10,8 @@ import pytest
 from custom_components.dyson_local import DOMAIN
 from custom_components.dyson_local.fan import (
     ATTR_TIMER,
+    COMMON_FEATURES,
     SERVICE_SET_TIMER,
-    SUPPORTED_FEATURES,
 )
 from homeassistant.components.fan import (
     ATTR_OSCILLATING,
@@ -59,7 +59,7 @@ async def test_state(hass: HomeAssistant, device: DysonFanDevice):
     assert attributes[ATTR_PERCENTAGE] == 50
     assert attributes[ATTR_PERCENTAGE_STEP] == 10
     assert attributes[ATTR_OSCILLATING] is True
-    assert attributes[ATTR_SUPPORTED_FEATURES] == SUPPORTED_FEATURES
+    assert attributes[ATTR_SUPPORTED_FEATURES] == COMMON_FEATURES
 
     er = await entity_registry.async_get_registry(hass)
     assert er.async_get(ENTITY_ID).unique_id == SERIAL

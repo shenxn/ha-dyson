@@ -2,8 +2,6 @@
 
 from typing import Callable
 
-from libdyson import DysonPureCool, DysonPureHumidifyCool
-
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
@@ -23,8 +21,6 @@ async def async_setup_entry(
         DysonNightModeSwitchEntity(device, name),
         DysonContinuousMonitoringSwitchEntity(device, name),
     ]
-    if isinstance(device, DysonPureCool) or isinstance(device, DysonPureHumidifyCool):
-        entities.append(DysonFrontAirflowSwitchEntity(device, name))
     async_add_entities(entities)
 
 
@@ -90,35 +86,3 @@ class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
     def turn_off(self):
         """Turn off continuous monitoring."""
         return self._device.disable_continuous_monitoring()
-
-
-class DysonFrontAirflowSwitchEntity(DysonEntity, SwitchEntity):
-    """Dyson fan front airflow."""
-
-    @property
-    def sub_name(self):
-        """Return the name of the entity."""
-        return "Front Airflow"
-
-    @property
-    def sub_unique_id(self):
-        """Return the unique id of the entity."""
-        return "front_airflow"
-
-    @property
-    def icon(self):
-        """Return the icon of the entity."""
-        return "mdi:tailwind"
-
-    @property
-    def is_on(self):
-        """Return if front airflow is on."""
-        return self._device.front_airflow
-
-    def turn_on(self):
-        """Turn on front airflow."""
-        return self._device.enable_front_airflow()
-
-    def turn_off(self):
-        """Turn off front airflow."""
-        return self._device.disable_front_airflow()

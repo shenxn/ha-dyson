@@ -14,9 +14,12 @@ from libdyson.const import AirQualityTarget
 import voluptuous as vol
 
 from homeassistant.components.fan import (
+    DIRECTION_FORWARD,
+    DIRECTION_REVERSE,
+    SUPPORT_DIRECTION,
     SUPPORT_OSCILLATE,
-    SUPPORT_SET_SPEED,
     SUPPORT_PRESET_MODE,
+    SUPPORT_SET_SPEED,
     FanEntity,
     NotValidPresetModeError,
 )
@@ -89,7 +92,7 @@ SUPPORTED_PRESET_MODES = [PRESET_MODE_AUTO]
 
 SPEED_RANGE = (1, 10)
 
-SUPPORTED_FEATURES = SUPPORT_OSCILLATE | SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
+COMMON_FEATURES = SUPPORT_OSCILLATE | SUPPORT_SET_SPEED | SUPPORT_PRESET_MODE
 
 
 async def async_setup_entry(
@@ -166,10 +169,12 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
     @property
     def preset_modes(self) -> List[str]:
+        """Return the preset modes supported."""
         return SUPPORTED_PRESET_MODES
 
     @property
     def preset_mode(self) -> Optional[str]:
+        """Return the current selected preset mode."""
         if self._device.auto_mode:
             return PRESET_MODE_AUTO
         return None
@@ -191,7 +196,7 @@ class DysonFanEntity(DysonEntity, FanEntity):
     @property
     def supported_features(self) -> int:
         """Flag supported features."""
-        return SUPPORTED_FEATURES
+        return COMMON_FEATURES
 
     def turn_on(
         self,
@@ -252,6 +257,28 @@ class DysonPureCoolEntity(DysonFanEntity):
     """Dyson Pure Cool entity."""
 
     @property
+    def supported_features(self) -> int:
+        """Flag supported features."""
+        return COMMON_FEATURES | SUPPORT_DIRECTION
+
+    @property
+    def current_direction(self) -> str:
+        """Return the current airflow direction."""
+        if self._device.front_airflow:
+            return DIRECTION_FORWARD
+        else:
+            return DIRECTION_REVERSE
+
+    def set_direction(self, direction: str) -> None:
+        """Configure the airflow direction."""
+        if direction == DIRECTION_FORWARD:
+            self._device.enable_front_airflow()
+        elif direction == DIRECTION_REVERSE:
+            self._device.disable_front_airflow()
+        else:
+            raise ValueError(f"Invalid direction {direction}")
+
+    @property
     def angle_low(self) -> int:
         """Return oscillation angle low."""
         return self._device.oscillation_angle_low
@@ -282,6 +309,28 @@ class DysonPureCoolEntity(DysonFanEntity):
 
 class DysonPureHumidifyCoolEntity(DysonFanEntity):
     """Dyson Pure Humidify+Cool entity."""
+
+    @property
+    def supported_features(self) -> int:
+        """Flag supported features."""
+        return COMMON_FEATURES | SUPPORT_DIRECTION
+
+    @property
+    def current_direction(self) -> str:
+        """Return the current airflow direction."""
+        if self._device.front_airflow:
+            return DIRECTION_FORWARD
+        else:
+            return DIRECTION_REVERSE
+
+    def set_direction(self, direction: str) -> None:
+        """Configure the airflow direction."""
+        if direction == DIRECTION_FORWARD:
+            self._device.enable_front_airflow()
+        elif direction == DIRECTION_REVERSE:
+            self._device.disable_front_airflow()
+        else:
+            raise ValueError(f"Invalid direction {direction}")
 
     @property
     def oscillation_mode(self) -> str:

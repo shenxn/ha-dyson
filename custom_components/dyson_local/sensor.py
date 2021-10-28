@@ -14,9 +14,15 @@ from libdyson.const import MessageType
 from homeassistant.components.sensor import DEVICE_CLASS_BATTERY, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     CONF_NAME,
     DEVICE_CLASS_HUMIDITY,
+    DEVICE_CLASS_NITROGEN_DIOXIDE,
+    DEVICE_CLASS_PM1,
+    DEVICE_CLASS_PM10,
+    DEVICE_CLASS_PM25,
     DEVICE_CLASS_TEMPERATURE,
+    DEVICE_CLASS_VOLATILE_ORGANIC_COMPOUNDS,
     PERCENTAGE,
     TEMP_CELSIUS,
     TIME_HOURS,
@@ -45,10 +51,23 @@ async def async_setup_entry(
         entities = [
             DysonHumiditySensor(coordinator, device, name),
             DysonTemperatureSensor(coordinator, device, name),
+            DysonVOCSensor(coordinator, device, name),
         ]
         if isinstance(device, DysonPureCoolLink):
-            entities.append(DysonFilterLifeSensor(device, name))
+            entities.extend(
+                [
+                    DysonFilterLifeSensor(device, name),
+                    DysonParticulatesSensor(coordinator, device, name),
+                ]
+            )
         else:  # DysonPureCool or DysonPureHumidifyCool
+            entities.extend(
+                [
+                    DysonPM25Sensor(coordinator, device, name),
+                    DysonPM10Sensor(coordinator, device, name),
+                    DysonNO2Sensor(coordinator, device, name),
+                ]
+            )
             if device.carbon_filter_life is None:
                 entities.append(DysonCombinedFilterLifeSensor(device, name))
             else:
@@ -64,6 +83,7 @@ async def async_setup_entry(
 
 
 class DysonSensor(SensorEntity, DysonEntity):
+    """Base class for a Dyson sensor."""
 
     _MESSAGE_TYPE = MessageType.STATE
     _SENSOR_TYPE = None
@@ -221,3 +241,73 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
             return temperature_kelvin
 
         return temperature_kelvin - 273.15
+
+
+class DysonPM25Sensor(DysonSensorEnvironmental):
+    """Dyson sensor for PM 2.5 fine particulate matters."""
+
+    _SENSOR_TYPE = "pm25"
+    _SENSOR_NAME = "PM 2.5"
+    _attr_device_class = DEVICE_CLASS_PM25
+    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+
+    @environmental_property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.particulate_matter_2_5
+
+
+class DysonPM10Sensor(DysonSensorEnvironmental):
+    """Dyson sensor for PM 10 particulate matters."""
+
+    _SENSOR_TYPE = "pm10"
+    _SENSOR_NAME = "PM 10"
+    _attr_device_class = DEVICE_CLASS_PM10
+    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+
+    @environmental_property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.particulate_matter_10
+
+
+class DysonParticulatesSensor(DysonSensorEnvironmental):
+    """Dyson sensor for particulate matters for "Link" devices."""
+
+    _SENSOR_TYPE = "pm1"
+    _SENSOR_NAME = "Particulates"
+    _attr_device_class = DEVICE_CLASS_PM1
+    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+
+    @environmental_property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.particulates
+
+
+class DysonVOCSensor(DysonSensorEnvironmental):
+    """Dyson sensor for volatile organic compounds."""
+
+    _SENSOR_TYPE = "voc"
+    _SENSOR_NAME = "Volatile Organic Compounds"
+    _attr_device_class = DEVICE_CLASS_VOLATILE_ORGANIC_COMPOUNDS
+    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+
+    @environmental_property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.volatile_organic_compounds
+
+
+class DysonNO2Sensor(DysonSensorEnvironmental):
+    """Dyson sensor for Nitrogen Dioxide."""
+
+    _SENSOR_TYPE = "no2"
+    _SENSOR_NAME = "Nitrogen Dioxide"
+    _attr_device_class = DEVICE_CLASS_NITROGEN_DIOXIDE
+    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+
+    @environmental_property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.nitrogen_dioxide

@@ -152,7 +152,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 def _async_get_platforms(device: DysonDevice) -> List[str]:
     if isinstance(device, Dyson360Eye) or isinstance(device, Dyson360Heurist):
         return ["binary_sensor", "sensor", "vacuum"]
-    platforms = ["air_quality", "fan", "sensor", "switch"]
+    platforms = ["fan", "sensor", "switch"]
     if isinstance(device, DysonPureHotCool) or isinstance(device, DysonPureHotCoolLink):
         platforms.append("climate")
     if isinstance(device, DysonPureHumidifyCool):

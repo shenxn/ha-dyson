@@ -1,6 +1,6 @@
 """Humidifier platform for Dyson."""
 
-from typing import Callable, List, Optional
+from typing import Callable, Optional
 
 from libdyson import MessageType, WaterHardness
 import voluptuous as vol
@@ -20,9 +20,6 @@ from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
 
 AVAILABLE_MODES = [MODE_NORMAL, MODE_AUTO]
-
-MIN_HUMIDITY = 30  # Not sure about this
-MAX_HUMIDITY = 70  # Not sure about this
 
 SUPPORTED_FEATURES = SUPPORT_MODES
 
@@ -60,25 +57,16 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
 
     _MESSAGE_TYPE = MessageType.STATE
 
-    @property
-    def device_class(self) -> str:
-        """Return device class."""
-        return DEVICE_CLASS_HUMIDIFIER
+    _attr_device_class = DEVICE_CLASS_HUMIDIFIER
+    _attr_available_modes = AVAILABLE_MODES
+    _attr_max_humidity = 70
+    _attr_min_humidity = 30
+    _attr_supported_features = SUPPORT_MODES
 
     @property
     def is_on(self) -> bool:
         """Return if humidification is on."""
         return self._device.humidification
-
-    @property
-    def min_humidity(self) -> int:
-        """Return the minimum target humidity."""
-        return MIN_HUMIDITY
-
-    @property
-    def max_humidity(self) -> int:
-        """Return the maximum target humidity."""
-        return MAX_HUMIDITY
 
     @property
     def target_humidity(self) -> Optional[int]:
@@ -89,19 +77,9 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
         return self._device.target_humidity
 
     @property
-    def available_modes(self) -> List[str]:
-        """Return available modes."""
-        return AVAILABLE_MODES
-
-    @property
     def mode(self) -> str:
         """Return current mode."""
         return MODE_AUTO if self._device.humidification_auto_mode else MODE_NORMAL
-
-    @property
-    def supported_features(self) -> int:
-        """Return supported features."""
-        return SUPPORT_MODES
 
     def turn_on(self, **kwargs) -> None:
         """Turn on humidification."""

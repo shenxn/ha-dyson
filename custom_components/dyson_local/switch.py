@@ -4,7 +4,7 @@ from typing import Callable
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_NAME, ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 
 from . import DysonEntity
@@ -26,6 +26,8 @@ async def async_setup_entry(
 
 class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
     """Dyson fan night mode switch."""
+
+    _attr_entity_category = ENTITY_CATEGORY_CONFIG
 
     @property
     def sub_name(self):
@@ -58,6 +60,8 @@ class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
 
 class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
     """Dyson fan continuous monitoring."""
+
+    _attr_entity_category = ENTITY_CATEGORY_CONFIG
 
     @property
     def sub_name(self):

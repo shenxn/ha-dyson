@@ -23,6 +23,7 @@ from homeassistant.const import (
     DEVICE_CLASS_PM25,
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_VOLATILE_ORGANIC_COMPOUNDS,
+    ENTITY_CATEGORY_DIAGNOSTIC,
     PERCENTAGE,
     TEMP_CELSIUS,
     TIME_HOURS,
@@ -136,6 +137,7 @@ class DysonFilterLifeSensor(DysonSensor):
 
     _SENSOR_TYPE = "filter_life"
     _SENSOR_NAME = "Filter Life"
+    _attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
     _attr_unit_of_measurement = TIME_HOURS
 
@@ -150,6 +152,7 @@ class DysonCarbonFilterLifeSensor(DysonSensor):
 
     _SENSOR_TYPE = "carbon_filter_life"
     _SENSOR_NAME = "Carbon Filter Life"
+    _attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
     _attr_unit_of_measurement = PERCENTAGE
 
@@ -164,6 +167,7 @@ class DysonHEPAFilterLifeSensor(DysonSensor):
 
     _SENSOR_TYPE = "hepa_filter_life"
     _SENSOR_NAME = "HEPA Filter Life"
+    _attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
     _attr_unit_of_measurement = PERCENTAGE
 
@@ -178,6 +182,7 @@ class DysonCombinedFilterLifeSensor(DysonSensor):
 
     _SENSOR_TYPE = "combined_filter_life"
     _SENSOR_NAME = "Filter Life"
+    _attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
     _attr_unit_of_measurement = PERCENTAGE
 
@@ -192,6 +197,7 @@ class DysonNextDeepCleanSensor(DysonSensor):
 
     _SENSOR_TYPE = "next_deep_clean"
     _SENSOR_NAME = "Next Deep Clean"
+    _attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
     _attr_unit_of_measurement = TIME_HOURS
 

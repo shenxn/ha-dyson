@@ -4,12 +4,7 @@ import logging
 import math
 from typing import Callable, List, Optional
 
-from libdyson import (
-    DysonPureCool,
-    DysonPureCoolLink,
-    HumidifyOscillationMode,
-    MessageType,
-)
+from libdyson import DysonPureCool, DysonPureCoolLink, MessageType
 from libdyson.const import AirQualityTarget
 import voluptuous as vol
 
@@ -49,24 +44,13 @@ AIR_QUALITY_TARGET_STR_TO_ENUM = {
     value: key for key, value in AIR_QUALITY_TARGET_ENUM_TO_STR.items()
 }
 
-OSCILLATION_MODE_ENUM_TO_STR = {
-    HumidifyOscillationMode.DEGREE_45: "45",
-    HumidifyOscillationMode.DEGREE_90: "90",
-    HumidifyOscillationMode.BREEZE: "breeze",
-}
-OSCILLATION_MODE_STR_TO_ENUM = {
-    value: key for key, value in OSCILLATION_MODE_ENUM_TO_STR.items()
-}
-
 ATTR_AIR_QUALITY_TARGET = "air_quality_target"
 ATTR_ANGLE_LOW = "angle_low"
 ATTR_ANGLE_HIGH = "angle_high"
-ATTR_OSCILLATION_MODE = "oscillation_mode"
 ATTR_TIMER = "timer"
 
 SERVICE_SET_AIR_QUALITY_TARGET = "set_air_quality_target"
 SERVICE_SET_ANGLE = "set_angle"
-SERVICE_SET_OSCILLATION_MODE = "set_oscillation_mode"
 SERVICE_SET_TIMER = "set_timer"
 
 SET_AIR_QUALITY_TARGET_SCHEMA = {
@@ -76,10 +60,6 @@ SET_AIR_QUALITY_TARGET_SCHEMA = {
 SET_ANGLE_SCHEMA = {
     vol.Required(ATTR_ANGLE_LOW): cv.positive_int,
     vol.Required(ATTR_ANGLE_HIGH): cv.positive_int,
-}
-
-SET_OSCILLATION_MODE_SCHEMA = {
-    vol.Required(ATTR_OSCILLATION_MODE): vol.In(OSCILLATION_MODE_STR_TO_ENUM),
 }
 
 SET_TIMER_SCHEMA = {
@@ -122,12 +102,6 @@ async def async_setup_entry(
     elif isinstance(device, DysonPureCool):
         platform.async_register_entity_service(
             SERVICE_SET_ANGLE, SET_ANGLE_SCHEMA, "set_angle"
-        )
-    else:  # DysonPureHumidityCool
-        platform.async_register_entity_service(
-            SERVICE_SET_OSCILLATION_MODE,
-            SET_OSCILLATION_MODE_SCHEMA,
-            "set_oscillation_mode",
         )
 
 
@@ -331,22 +305,3 @@ class DysonPureHumidifyCoolEntity(DysonFanEntity):
             self._device.disable_front_airflow()
         else:
             raise ValueError(f"Invalid direction {direction}")
-
-    @property
-    def oscillation_mode(self) -> str:
-        """Return oscillation mode."""
-        return OSCILLATION_MODE_ENUM_TO_STR[self._device.oscillation_mode]
-
-    @property
-    def device_state_attributes(self) -> dict:
-        """Return optional state attributes."""
-        return {ATTR_OSCILLATION_MODE: self.oscillation_mode}
-
-    def set_oscillation_mode(self, oscillation_mode: str) -> None:
-        """Set oscillation mode."""
-        _LOGGER.debug(
-            "set oscillation mode %s for device %s",
-            oscillation_mode,
-            self.name,
-        )
-        self._device.enable_oscillation(OSCILLATION_MODE_STR_TO_ENUM[oscillation_mode])

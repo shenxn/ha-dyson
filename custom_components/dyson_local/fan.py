@@ -5,7 +5,6 @@ import math
 from typing import Callable, List, Optional
 
 from libdyson import DysonPureCool, DysonPureCoolLink, MessageType
-from libdyson.const import AirQualityTarget
 import voluptuous as vol
 
 from homeassistant.components.fan import (
@@ -33,29 +32,12 @@ from .const import DATA_DEVICES
 
 _LOGGER = logging.getLogger(__name__)
 
-AIR_QUALITY_TARGET_ENUM_TO_STR = {
-    AirQualityTarget.OFF: "off",
-    AirQualityTarget.GOOD: "good",
-    AirQualityTarget.DEFAULT: "default",
-    AirQualityTarget.SENSITIVE: "sensitive",
-    AirQualityTarget.VERY_SENSITIVE: "very sensitive",
-}
-AIR_QUALITY_TARGET_STR_TO_ENUM = {
-    value: key for key, value in AIR_QUALITY_TARGET_ENUM_TO_STR.items()
-}
-
-ATTR_AIR_QUALITY_TARGET = "air_quality_target"
 ATTR_ANGLE_LOW = "angle_low"
 ATTR_ANGLE_HIGH = "angle_high"
 ATTR_TIMER = "timer"
 
-SERVICE_SET_AIR_QUALITY_TARGET = "set_air_quality_target"
 SERVICE_SET_ANGLE = "set_angle"
 SERVICE_SET_TIMER = "set_timer"
-
-SET_AIR_QUALITY_TARGET_SCHEMA = {
-    vol.Required(ATTR_AIR_QUALITY_TARGET): vol.In(AIR_QUALITY_TARGET_STR_TO_ENUM),
-}
 
 SET_ANGLE_SCHEMA = {
     vol.Required(ATTR_ANGLE_LOW): cv.positive_int,
@@ -93,13 +75,7 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_SET_TIMER, SET_TIMER_SCHEMA, "set_timer"
     )
-    if isinstance(device, DysonPureCoolLink):
-        platform.async_register_entity_service(
-            SERVICE_SET_AIR_QUALITY_TARGET,
-            SET_AIR_QUALITY_TARGET_SCHEMA,
-            "set_air_quality_target",
-        )
-    elif isinstance(device, DysonPureCool):
+    if isinstance(device, DysonPureCool):
         platform.async_register_entity_service(
             SERVICE_SET_ANGLE, SET_ANGLE_SCHEMA, "set_angle"
         )
@@ -209,22 +185,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
 class DysonPureCoolLinkEntity(DysonFanEntity):
     """Dyson Pure Cool Link entity."""
-
-    @property
-    def air_quality_target(self) -> str:
-        """Return air quality target."""
-        return AIR_QUALITY_TARGET_ENUM_TO_STR[self._device.air_quality_target]
-
-    @property
-    def device_state_attributes(self) -> dict:
-        """Return optional state attributes."""
-        return {ATTR_AIR_QUALITY_TARGET: self.air_quality_target}
-
-    def set_air_quality_target(self, air_quality_target: str) -> None:
-        """Set air quality target."""
-        self._device.set_air_quality_target(
-            AIR_QUALITY_TARGET_STR_TO_ENUM[air_quality_target]
-        )
 
 
 class DysonPureCoolEntity(DysonFanEntity):

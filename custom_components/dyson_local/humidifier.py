@@ -2,8 +2,7 @@
 
 from typing import Callable, Optional
 
-from libdyson import MessageType, WaterHardness
-import voluptuous as vol
+from libdyson import MessageType
 
 from homeassistant.components.humidifier import (
     DEVICE_CLASS_HUMIDIFIER,
@@ -14,7 +13,6 @@ from homeassistant.components.humidifier.const import MODE_AUTO, MODE_NORMAL
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_platform
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
@@ -22,20 +20,6 @@ from .const import DATA_DEVICES, DOMAIN
 AVAILABLE_MODES = [MODE_NORMAL, MODE_AUTO]
 
 SUPPORTED_FEATURES = SUPPORT_MODES
-
-ATTR_WATER_HARDNESS = "water_hardness"
-
-SERVICE_SET_WATER_HARDNESS = "set_water_hardness"
-
-WATER_HARDNESS_STR_TO_ENUM = {
-    "soft": WaterHardness.SOFT,
-    "medium": WaterHardness.MEDIUM,
-    "hard": WaterHardness.HARD,
-}
-
-SET_WATER_HARDNESS_SCHEMA = {
-    vol.Required(ATTR_WATER_HARDNESS): vol.In(WATER_HARDNESS_STR_TO_ENUM)
-}
 
 
 async def async_setup_entry(
@@ -45,11 +29,6 @@ async def async_setup_entry(
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
     async_add_entities([DysonHumidifierEntity(device, name)])
-
-    platform = entity_platform.current_platform.get()
-    platform.async_register_entity_service(
-        SERVICE_SET_WATER_HARDNESS, SET_WATER_HARDNESS_SCHEMA, "set_water_hardness"
-    )
 
 
 class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
@@ -102,7 +81,3 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
             self._device.disable_humidification_auto_mode()
         else:
             raise ValueError(f"Invalid mode: {mode}")
-
-    def set_water_hardness(self, water_hardness: str) -> None:
-        """Set water hardness."""
-        self._device.set_water_hardness(WATER_HARDNESS_STR_TO_ENUM[water_hardness])

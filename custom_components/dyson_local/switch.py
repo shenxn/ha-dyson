@@ -2,6 +2,8 @@
 
 from typing import Callable
 
+from libdyson import DysonPureHotCoolLink
+
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, ENTITY_CATEGORY_CONFIG
@@ -21,6 +23,8 @@ async def async_setup_entry(
         DysonNightModeSwitchEntity(device, name),
         DysonContinuousMonitoringSwitchEntity(device, name),
     ]
+    if isinstance(device, DysonPureHotCoolLink):
+        entities.append(DysonFocusModeSwitchEntity(device, name))
     async_add_entities(entities)
 
 
@@ -90,3 +94,33 @@ class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
     def turn_off(self):
         """Turn off continuous monitoring."""
         return self._device.disable_continuous_monitoring()
+
+
+class DysonFocusModeSwitchEntity(DysonEntity, SwitchEntity):
+    """Dyson Pure Hot+Cool Link focus mode switch."""
+
+    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+    _attr_icon = "mdi:image-filter-center-focus"
+
+    @property
+    def sub_name(self):
+        """Return the name of the entity."""
+        return "Focus Mode"
+
+    @property
+    def sub_unique_id(self):
+        """Return the unique id of the entity."""
+        return "focus_mode"
+
+    @property
+    def is_on(self):
+        """Return if switch is on."""
+        return self._device.focus_mode
+
+    def turn_on(self):
+        """Turn on switch."""
+        return self._device.enable_focus_mode()
+
+    def turn_off(self):
+        """Turn off switch."""
+        return self._device.disable_focus_mode()

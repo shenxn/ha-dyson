@@ -2,11 +2,11 @@
 
 from typing import Callable
 
-from libdyson import DysonPureCool, DysonPureHumidifyCool
+from libdyson import DysonPureHotCoolLink
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_NAME, ENTITY_CATEGORY_CONFIG
 from homeassistant.core import HomeAssistant
 
 from . import DysonEntity
@@ -22,15 +22,16 @@ async def async_setup_entry(
     entities = [
         DysonNightModeSwitchEntity(device, name),
         DysonContinuousMonitoringSwitchEntity(device, name),
-        DysonAutoModeSwitchEntity(device, name),
     ]
-    if isinstance(device, DysonPureCool) or isinstance(device, DysonPureHumidifyCool):
-        entities.append(DysonFrontAirflowSwitchEntity(device, name))
+    if isinstance(device, DysonPureHotCoolLink):
+        entities.append(DysonFocusModeSwitchEntity(device, name))
     async_add_entities(entities)
 
 
 class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
     """Dyson fan night mode switch."""
+
+    _attr_entity_category = ENTITY_CATEGORY_CONFIG
 
     @property
     def sub_name(self):
@@ -64,6 +65,8 @@ class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
 class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
     """Dyson fan continuous monitoring."""
 
+    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+
     @property
     def sub_name(self):
         """Return the name of the entity."""
@@ -93,65 +96,31 @@ class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
         return self._device.disable_continuous_monitoring()
 
 
-class DysonAutoModeSwitchEntity(DysonEntity, SwitchEntity):
-    """Dyson auto mode switch."""
+class DysonFocusModeSwitchEntity(DysonEntity, SwitchEntity):
+    """Dyson Pure Hot+Cool Link focus mode switch."""
+
+    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+    _attr_icon = "mdi:image-filter-center-focus"
 
     @property
     def sub_name(self):
         """Return the name of the entity."""
-        return "Auto Mode"
+        return "Focus Mode"
 
     @property
     def sub_unique_id(self):
         """Return the unique id of the entity."""
-        return "auto_mode"
-
-    @property
-    def icon(self):
-        """Return the icon of the entity."""
-        return "mdi:fan-auto"
+        return "focus_mode"
 
     @property
     def is_on(self):
-        """Return if auto mode is on."""
-        return self._device.auto_mode
+        """Return if switch is on."""
+        return self._device.focus_mode
 
     def turn_on(self):
-        """Turn on auto mode."""
-        return self._device.enable_auto_mode()
+        """Turn on switch."""
+        return self._device.enable_focus_mode()
 
     def turn_off(self):
-        """Turn off auto mode."""
-        return self._device.disable_auto_mode()
-
-
-class DysonFrontAirflowSwitchEntity(DysonEntity, SwitchEntity):
-    """Dyson fan front airflow."""
-
-    @property
-    def sub_name(self):
-        """Return the name of the entity."""
-        return "Front Airflow"
-
-    @property
-    def sub_unique_id(self):
-        """Return the unique id of the entity."""
-        return "front_airflow"
-
-    @property
-    def icon(self):
-        """Return the icon of the entity."""
-        return "mdi:tailwind"
-
-    @property
-    def is_on(self):
-        """Return if front airflow is on."""
-        return self._device.front_airflow
-
-    def turn_on(self):
-        """Turn on front airflow."""
-        return self._device.enable_front_airflow()
-
-    def turn_off(self):
-        """Turn off front airflow."""
-        return self._device.disable_front_airflow()
+        """Turn off switch."""
+        return self._device.disable_focus_mode()

@@ -7,5 +7,6 @@
     "dependencies": ["zeroconf"],
     "codeowners": ["@shenxn"],
     "requirements": ["libdyson==0.8.7"],
-    "version": "0.15.0"
+    "version": "0.15.0",
+    "iot_class": "local_polling"
 }

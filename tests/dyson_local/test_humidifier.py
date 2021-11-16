@@ -2,22 +2,14 @@
 
 from unittest.mock import patch
 
-from libdyson import (
-    DEVICE_TYPE_PURE_HUMIDIFY_COOL,
-    DysonPureHumidifyCool,
-    MessageType,
-    WaterHardness,
-)
+from libdyson import DEVICE_TYPE_PURE_HUMIDIFY_COOL, DysonPureHumidifyCool, MessageType
 from libdyson.const import AirQualityTarget
 import pytest
 
-from custom_components.dyson_local import DOMAIN
 from custom_components.dyson_local.humidifier import (
-    ATTR_WATER_HARDNESS,
     AVAILABLE_MODES,
     MAX_HUMIDITY,
     MIN_HUMIDITY,
-    SERVICE_SET_WATER_HARDNESS,
     SUPPORTED_FEATURES,
 )
 from homeassistant.components.humidifier import (
@@ -124,43 +116,5 @@ async def test_command(
     await hass.services.async_call(
         HUMIDIFIER_DOMAIN, service, service_data, blocking=True
     )
-    func = getattr(device, command)
-    func.assert_called_once_with(*command_args)
-
-
-@pytest.mark.parametrize(
-    "service,service_data,command,command_args",
-    [
-        (
-            SERVICE_SET_WATER_HARDNESS,
-            {ATTR_WATER_HARDNESS: "soft"},
-            "set_water_hardness",
-            [WaterHardness.SOFT],
-        ),
-        (
-            SERVICE_SET_WATER_HARDNESS,
-            {ATTR_WATER_HARDNESS: "medium"},
-            "set_water_hardness",
-            [WaterHardness.MEDIUM],
-        ),
-        (
-            SERVICE_SET_WATER_HARDNESS,
-            {ATTR_WATER_HARDNESS: "hard"},
-            "set_water_hardness",
-            [WaterHardness.HARD],
-        ),
-    ],
-)
-async def test_service(
-    hass: HomeAssistant,
-    device: DysonPureHumidifyCool,
-    service: str,
-    service_data: dict,
-    command: str,
-    command_args: list,
-):
-    """Test custom services."""
-    service_data[ATTR_ENTITY_ID] = ENTITY_ID
-    await hass.services.async_call(DOMAIN, service, service_data, blocking=True)
     func = getattr(device, command)
     func.assert_called_once_with(*command_args)

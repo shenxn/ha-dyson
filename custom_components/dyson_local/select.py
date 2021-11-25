@@ -2,7 +2,13 @@
 
 from typing import Callable
 
-from libdyson import DysonPureHumidifyCool, HumidifyOscillationMode, WaterHardness
+from libdyson import (
+    DysonPureHumidifyCool,
+    DysonPureHotCoolLink,
+    DysonPureCoolLink,
+    HumidifyOscillationMode,
+    WaterHardness,
+)
 from libdyson.const import AirQualityTarget
 
 from homeassistant.components.select import SelectEntity
@@ -54,6 +60,10 @@ async def async_setup_entry(
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
     entities = []
+    if isinstance(device, DysonPureHotCoolLink) or isinstance(
+        device, DysonPureCoolLink
+    ):
+        entities.append(DysonAirQualitySelect(device, name))
     if isinstance(device, DysonPureHumidifyCool):
         entities.extend(
             [

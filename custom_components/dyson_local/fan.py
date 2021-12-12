@@ -2,7 +2,7 @@
 
 import logging
 import math
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Mapping, Optional
 
 from libdyson import DysonPureCool, DysonPureCoolLink, MessageType
 import voluptuous as vol
@@ -223,8 +223,8 @@ class DysonPureCoolEntity(DysonFanEntity):
         return self._device.oscillation_angle_high
 
     @property
-    def device_state_attributes(self) -> dict:
-        """Return optional state attributes."""
+    def extra_state_attributes(self) -> Mapping[str, Any]:
+        """Return fan-specific state attributes."""
         return {
             ATTR_ANGLE_LOW: self.angle_low,
             ATTR_ANGLE_HIGH: self.angle_high,

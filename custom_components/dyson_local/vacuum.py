@@ -1,6 +1,6 @@
 """Vacuum platform for Dyson."""
 
-from typing import Callable, List
+from typing import Any, Callable, List, Mapping
 
 from libdyson import (
     Dyson360Eye,
@@ -172,7 +172,7 @@ class DysonVacuumEntity(DysonEntity, StateVacuumEntity):
         return SUPPORTED_FEATURES
 
     @property
-    def device_state_attributes(self) -> dict:
+    def extra_state_attributes(self) -> Mapping[str, Any]:
         """Expose the status to state attributes."""
         return {
             ATTR_POSITION: str(self._device.position),

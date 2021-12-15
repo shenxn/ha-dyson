@@ -125,7 +125,6 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
         if target_temp is None:
             _LOGGER.error("Missing target temperature %s", kwargs)
             return
-        target_temp = int(target_temp)
         _LOGGER.debug("Set %s temperature %s", self.name, target_temp)
         # Limit the target temperature into acceptable range.
         target_temp = min(self.max_temp, target_temp)

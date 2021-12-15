@@ -12,6 +12,10 @@ This is a HA custom integration for dyson. There are several main differences be
 
 My goal is to make this integration official. However, at the current stage, I don't want to do the changes in core since there could be a lot of breaking changes. Therefore, I'll do be merge when everything seems stable.
 
+## Important note regarding connection via Dyson Link
+
+If you use your Dyson Link account to connect to the integration, you may or may not encounter a `libdyson.exceptions.DysonInvalidAuth` error. In this case, try disconnecting from the mobile app first, it should clear the error. Sometimes, you just need to try multiple times. If you discover a workaround for this issue please open a pull request.
+
 ## Installation
 
 You can install using HACS. Adding https://github.com/shenxn/ha-dyson as custom repository and then install Dyson Local. If you want cloud functionalities as well, add https://github.com/shenxn/ha-dyson-cloud and install Dyson Cloud.
@@ -50,7 +54,7 @@ Version 0.6.1 introduced a new way to set up. This is inspired by https://commun
 
 ### Setup using Dyson cloud account
 
-You can also set up Dyson Cloud first so that you don't need to manually get device credentials. To do so, go to __Configuration__ -> __Integrations__ and click the __+__ button. Then find Dyson Cloud. After successful setup, all devices under the account will be shown as discovered entities and you can then set up Dyson Local with single click. Leave host blank to using zeroconf discovery. After that, you can even remove Dyson Cloud entity if you don't need cleaning maps. All local devices that are already set up will remain untouched.
+You can also set up Dyson Cloud first so that you don't need to manually get device credentials. To do so, go to **Configuration** -> **Integrations** and click the **+** button. Then find Dyson Cloud. After successful setup, all devices under the account will be shown as discovered entities and you can then set up Dyson Local with single click. Leave host blank to using zeroconf discovery. After that, you can even remove Dyson Cloud entity if you don't need cleaning maps. All local devices that are already set up will remain untouched.
 
 ### Setup manually
 
@@ -59,6 +63,7 @@ If you want to manually set up Dyson Local, you need to get credentials first. C
 ## Debug Log
 
 To enable debug log, add the following lines to your `configuration.yaml` and restart your HomeAssistant.
+
 ```yaml
 logger:
   default: info

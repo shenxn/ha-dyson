@@ -9,8 +9,9 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME, ENTITY_CATEGORY_DIAGNOSTIC
+from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
@@ -42,7 +43,7 @@ async def async_setup_entry(
 class DysonVacuumBatteryChargingSensor(DysonEntity, BinarySensorEntity):
     """Dyson vacuum battery charging sensor."""
 
-    _attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
     def is_on(self) -> bool:
@@ -68,7 +69,7 @@ class DysonVacuumBatteryChargingSensor(DysonEntity, BinarySensorEntity):
 class Dyson360HeuristBinFullSensor(DysonEntity, BinarySensorEntity):
     """Dyson 360 Heurist bin full sensor."""
 
-    _attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
 
     @property
     def is_on(self) -> bool:
@@ -94,7 +95,7 @@ class Dyson360HeuristBinFullSensor(DysonEntity, BinarySensorEntity):
 class DysonPureHotCoolLinkTiltSensor(DysonEntity, BinarySensorEntity):
     """Dyson Pure Hot+Cool Link tilt sensor."""
 
-    _attr_entity_category = ENTITY_CATEGORY_DIAGNOSTIC
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:angle-acute"
 
     @property

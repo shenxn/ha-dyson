@@ -14,6 +14,8 @@ My goal is to make this integration official. However, at the current stage, I d
 
 ## Installation
 
+The minimum supported Home Assistant version is 2021.12.0.
+
 You can install using HACS. Adding https://github.com/shenxn/ha-dyson as custom repository and then install Dyson Local. If you want cloud functionalities as well, add https://github.com/shenxn/ha-dyson-cloud and install Dyson Cloud.
 
 You can also install manually

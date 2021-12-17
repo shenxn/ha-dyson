@@ -38,8 +38,6 @@ Dyson Local uses MQTT-based protocol to communicate with local Dyson devices usi
 - Dyson Pure Hot+Cool Link
 - Dyson Pure Humidity+Cool
 
-Humidifier support under HA platform `humidifier` is not supported yet.
-
 ### Dyson Cloud
 
 Dyson Cloud uses HTTP-based API to communicate with cloud service. Currently it supports getting device credentials and show all devices as discovered entities under the Integrations page. It also supports getting cleaning maps as `camera` entities for 360 Eye robot vacuum.

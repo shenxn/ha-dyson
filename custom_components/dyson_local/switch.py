@@ -6,8 +6,9 @@ from libdyson import DysonPureHotCoolLink
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME, ENTITY_CATEGORY_CONFIG
+from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
@@ -31,7 +32,7 @@ async def async_setup_entry(
 class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
     """Dyson fan night mode switch."""
 
-    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+    _attr_entity_category = EntityCategory.CONFIG
 
     @property
     def sub_name(self):
@@ -65,7 +66,7 @@ class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
 class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
     """Dyson fan continuous monitoring."""
 
-    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+    _attr_entity_category = EntityCategory.CONFIG
 
     @property
     def sub_name(self):
@@ -99,7 +100,7 @@ class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
 class DysonFocusModeSwitchEntity(DysonEntity, SwitchEntity):
     """Dyson Pure Hot+Cool Link focus mode switch."""
 
-    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:image-filter-center-focus"
 
     @property

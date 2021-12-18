@@ -18,6 +18,8 @@ If you use your Dyson Link account to connect to the integration, you may or may
 
 ## Installation
 
+The minimum supported Home Assistant version is 2021.12.0.
+
 You can install using HACS. Adding https://github.com/shenxn/ha-dyson as custom repository and then install Dyson Local. If you want cloud functionalities as well, add https://github.com/shenxn/ha-dyson-cloud and install Dyson Cloud.
 
 You can also install manually
@@ -39,8 +41,6 @@ Dyson Local uses MQTT-based protocol to communicate with local Dyson devices usi
 - Dyson Pure Hot+Cool
 - Dyson Pure Hot+Cool Link
 - Dyson Pure Humidity+Cool
-
-Humidifier support under HA platform `humidifier` is not supported yet.
 
 ### Dyson Cloud
 

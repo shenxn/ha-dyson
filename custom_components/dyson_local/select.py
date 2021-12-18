@@ -3,9 +3,9 @@
 from typing import Callable
 
 from libdyson import (
-    DysonPureHumidifyCool,
-    DysonPureHotCoolLink,
     DysonPureCoolLink,
+    DysonPureHotCoolLink,
+    DysonPureHumidifyCool,
     HumidifyOscillationMode,
     WaterHardness,
 )
@@ -13,8 +13,9 @@ from libdyson.const import AirQualityTarget
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME, ENTITY_CATEGORY_CONFIG
+from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity import EntityCategory
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
@@ -77,7 +78,7 @@ async def async_setup_entry(
 class DysonAirQualitySelect(DysonEntity, SelectEntity):
     """Air quality target for supported models."""
 
-    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_options = list(AIR_QUALITY_TARGET_STR_TO_ENUM.keys())
 
     @property
@@ -103,7 +104,7 @@ class DysonAirQualitySelect(DysonEntity, SelectEntity):
 class DysonOscillationModeSelect(DysonEntity, SelectEntity):
     """Oscillation mode for supported models."""
 
-    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:sync"
     _attr_options = list(OSCILLATION_MODE_STR_TO_ENUM.keys())
 
@@ -130,7 +131,7 @@ class DysonOscillationModeSelect(DysonEntity, SelectEntity):
 class DysonWaterHardnessSelect(DysonEntity, SelectEntity):
     """Dyson Pure Humidify+Cool Water Hardness Select."""
 
-    _attr_entity_category = ENTITY_CATEGORY_CONFIG
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:water-opacity"
     _attr_options = list(WATER_HARDNESS_STR_TO_ENUM.keys())
 

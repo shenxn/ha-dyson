@@ -15,7 +15,7 @@ from .const import DATA_DEVICES, DOMAIN
 
 
 async def async_setup_entry(
-        hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
+    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
 ) -> None:
     """Set up Dyson switch from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]

@@ -14,10 +14,13 @@ from homeassistant.components.climate.const import (
     CURRENT_HVAC_OFF,
     FAN_DIFFUSE,
     FAN_FOCUS,
+    SWING_ON,
+    SWING_OFF,
     HVAC_MODE_COOL,
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
     SUPPORT_FAN_MODE,
+    SUPPORT_SWING_MODE,
     SUPPORT_TARGET_TEMPERATURE,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -31,8 +34,9 @@ _LOGGER = logging.getLogger(__name__)
 
 HVAC_MODES = [HVAC_MODE_OFF, HVAC_MODE_COOL, HVAC_MODE_HEAT]
 FAN_MODES = [FAN_FOCUS, FAN_DIFFUSE]
+SWING_MODES = [SWING_ON, SWING_OFF]
 SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE
-SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | SUPPORT_FAN_MODE
+SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | SUPPORT_FAN_MODE | SUPPORT_SWING_MODE
 
 
 async def async_setup_entry(
@@ -160,6 +164,18 @@ class DysonPureHotCoolLinkEntity(DysonClimateEntity):
         return FAN_MODES
 
     @property
+    def swing_mode(self) -> str:
+        """Return the swing setting."""
+        if self._device.oscillation:
+            return SWING_ON
+        return SWING_OFF
+
+    @property
+    def swing_modes(self) -> List[str]:
+        """Return the list of available swing modes."""
+        return SWING_MODES
+
+    @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
         return SUPPORT_FLAGS_LINK
@@ -171,6 +187,14 @@ class DysonPureHotCoolLinkEntity(DysonClimateEntity):
             self._device.enable_focus_mode()
         elif fan_mode == FAN_DIFFUSE:
             self._device.disable_focus_mode()
+
+    def set_swing_mode(self, swing_mode: str) -> None:
+        """Set swing mode of the device."""
+        _LOGGER.debug("Set %s oscillation mode %s", self.name, swing_mode)
+        if swing_mode == SWING_ON:
+            self._device.enable_oscillation()
+        elif swing_mode == SWING_OFF:
+            self._device.disable_oscillation()
 
 
 class DysonPureHotCoolEntity(DysonClimateEntity):

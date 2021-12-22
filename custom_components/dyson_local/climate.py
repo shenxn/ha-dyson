@@ -18,7 +18,6 @@ from homeassistant.components.climate.const import (
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
     SUPPORT_FAN_MODE,
-    SUPPORT_OSCILLATE,
     SUPPORT_TARGET_TEMPERATURE,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -33,7 +32,7 @@ _LOGGER = logging.getLogger(__name__)
 HVAC_MODES = [HVAC_MODE_OFF, HVAC_MODE_COOL, HVAC_MODE_HEAT]
 FAN_MODES = [FAN_FOCUS, FAN_DIFFUSE]
 SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE
-SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | SUPPORT_FAN_MODE | SUPPORT_OSCILLATE
+SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | SUPPORT_FAN_MODE
 
 
 async def async_setup_entry(
@@ -161,22 +160,9 @@ class DysonPureHotCoolLinkEntity(DysonClimateEntity):
         return FAN_MODES
 
     @property
-    def oscillating(self):
-        """Return the oscillation state."""
-        return self._device.oscillation
-
-    @property
     def supported_features(self) -> int:
         """Return the list of supported features."""
         return SUPPORT_FLAGS_LINK
-
-    def oscillate(self, oscillating: bool) -> None:
-        """Turn on/of oscillation."""
-        _LOGGER.debug("Turn oscillation %s for device %s", oscillating, self.name)
-        if oscillating:
-            self._device.enable_oscillation()
-        else:
-            self._device.disable_oscillation()
 
     def set_fan_mode(self, fan_mode: str) -> None:
         """Set fan mode of the device."""

@@ -15,7 +15,7 @@ from .const import DATA_DEVICES, DOMAIN
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
+        hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
 ) -> None:
     """Set up Dyson switch from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
@@ -26,6 +26,7 @@ async def async_setup_entry(
     ]
     if isinstance(device, DysonPureHotCoolLink):
         entities.append(DysonFocusModeSwitchEntity(device, name))
+        entities.append(DysonOscillationModeSwitchEntity(device, name))
     async_add_entities(entities)
 
 
@@ -61,6 +62,40 @@ class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
     def turn_off(self):
         """Turn off night mode."""
         return self._device.disable_night_mode()
+
+
+class DysonOscillationModeSwitchEntity(DysonEntity, SwitchEntity):
+    """Dyson fan oscillation switch."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    @property
+    def sub_name(self):
+        """Return the name of the entity."""
+        return "Oscillate"
+
+    @property
+    def sub_unique_id(self):
+        """Return the unique id of the entity."""
+        return "oscillate"
+
+    @property
+    def icon(self):
+        """Return the icon of the entity."""
+        return "mdi:arrow-left-right-bold"
+
+    @property
+    def is_on(self):
+        """Return if oscillation is on."""
+        return self._device.oscillation
+
+    def turn_on(self):
+        """Turn on oscillation."""
+        return self._device.enable_oscillation()
+
+    def turn_off(self):
+        """Turn off oscillation."""
+        return self._device.disable_oscillation()
 
 
 class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):

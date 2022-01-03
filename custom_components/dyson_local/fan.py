@@ -180,7 +180,8 @@ class DysonFanEntity(DysonEntity, FanEntity):
         """Set sleep timer."""
         if timer == 0:
             self._device.disable_sleep_timer()
-        self._device.set_sleep_timer(timer)
+        else:
+            self._device.set_sleep_timer(timer)
 
 
 class DysonPureCoolLinkEntity(DysonFanEntity):

@@ -8,6 +8,7 @@ from libdyson import (
     DysonDevice,
     DysonPureCoolLink,
     DysonPureHumidifyCool,
+    DysonPurifierHumidifyCoolFormaldehyde,
 )
 from libdyson.const import MessageType
 
@@ -71,7 +72,8 @@ async def async_setup_entry(
                         DysonHEPAFilterLifeSensor(device, name),
                     ]
                 )
-        if isinstance(device, DysonPureHumidifyCool):
+        if isinstance(device, DysonPureHumidifyCool) or isinstance(
+            device, DysonPurifierHumidifyCoolFormaldehyde):
             entities.append(DysonNextDeepCleanSensor(device, name))
     async_add_entities(entities)
 

@@ -12,6 +12,7 @@ from libdyson import (
     DysonPureHotCool,
     DysonPureHotCoolLink,
     DysonPureHumidifyCool,
+    DysonPurifierHumidifyCoolFormaldehyde,
     MessageType,
     get_device,
 )
@@ -157,7 +158,8 @@ def _async_get_platforms(device: DysonDevice) -> List[str]:
         platforms.append("climate")
     if isinstance(device, DysonPureHotCoolLink):
         platforms.extend(["binary_sensor", "climate"])
-    if isinstance(device, DysonPureHumidifyCool):
+    if isinstance(device, DysonPureHumidifyCool) or isinstance(
+        device, DysonPurifierHumidifyCoolFormaldehyde):
         platforms.append("humidifier")
     return platforms
 

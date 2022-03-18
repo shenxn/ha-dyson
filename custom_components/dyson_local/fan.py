@@ -104,18 +104,21 @@ class DysonFanEntity(DysonEntity, FanEntity):
     @property
     def percentage(self) -> Optional[int]:
         """Return the current speed percentage."""
-        if self._device.speed is None:
+        if self._device.speed is None or self._device.auto_mode:
             return None
+        if not self._device.is_on:
+            return 0
         return ranged_value_to_percentage(SPEED_RANGE, int(self._device.speed))
 
     def set_percentage(self, percentage: int) -> None:
         """Set the speed percentage of the fan."""
-        if percentage == 0 and not self._device.auto_mode:
+        if percentage == 0:
             self._device.turn_off()
             return
 
         dyson_speed = math.ceil(percentage_to_ranged_value(SPEED_RANGE, percentage))
         self._device.set_speed(dyson_speed)
+        self._device.disable_auto_mode()
 
     @property
     def preset_modes(self) -> List[str]:
@@ -129,11 +132,9 @@ class DysonFanEntity(DysonEntity, FanEntity):
             return PRESET_MODE_AUTO
         return None
 
-    def set_preset_mode(self, preset_mode: Optional[str]) -> None:
+    def set_preset_mode(self, preset_mode: str) -> None:
         """Configure the preset mode."""
-        if preset_mode is None:
-            self._device.disable_auto_mode()
-        elif preset_mode == PRESET_MODE_AUTO:
+        if preset_mode == PRESET_MODE_AUTO:
             self._device.enable_auto_mode()
         else:
             raise NotValidPresetModeError(f"Invalid preset mode: {preset_mode}")
@@ -156,8 +157,9 @@ class DysonFanEntity(DysonEntity, FanEntity):
     ) -> None:
         """Turn on the fan."""
         _LOGGER.debug("Turn on fan %s with percentage %s", self.name, percentage)
-        self.set_preset_mode(preset_mode)
-        if percentage is not None:
+        if preset_mode:
+            self.set_preset_mode(preset_mode)
+        if percentage:
             self.set_percentage(percentage)
 
         self._device.turn_on()

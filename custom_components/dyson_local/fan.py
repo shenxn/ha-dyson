@@ -150,7 +150,6 @@ class DysonFanEntity(DysonEntity, FanEntity):
 
     def turn_on(
         self,
-        speed: Optional[str] = None,
         percentage: Optional[int] = None,
         preset_mode: Optional[str] = None,
         **kwargs,

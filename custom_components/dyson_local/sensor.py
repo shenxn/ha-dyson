@@ -222,7 +222,7 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "temperature"
     _SENSOR_NAME = "Temperature"
     _attr_device_class = SensorDeviceClass.TEMPERATURE
-    _attr_unit_of_measurement = TEMP_CELSIUS
+    native_unit_of_measurement = TEMP_CELSIUS
 
     @environmental_property
     def temperature_kelvin(self) -> int:

@@ -119,7 +119,7 @@ class DysonBatterySensor(DysonSensor):
     _SENSOR_TYPE = "battery_level"
     _SENSOR_NAME = "Battery Level"
     _attr_device_class = SensorDeviceClass.BATTERY
-    _attr_unit_of_measurement = PERCENTAGE
+    _attr_native_unit_of_measurement = PERCENTAGE
 
     @property
     def state(self) -> int:
@@ -134,7 +134,7 @@ class DysonFilterLifeSensor(DysonSensor):
     _SENSOR_NAME = "Filter Life"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_unit_of_measurement = TIME_HOURS
+    _attr_native_unit_of_measurement = TIME_HOURS
 
     @property
     def state(self) -> int:
@@ -149,7 +149,7 @@ class DysonCarbonFilterLifeSensor(DysonSensor):
     _SENSOR_NAME = "Carbon Filter Life"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_unit_of_measurement = PERCENTAGE
+    _attr_native_unit_of_measurement = PERCENTAGE
 
     @property
     def state(self) -> int:
@@ -164,7 +164,7 @@ class DysonHEPAFilterLifeSensor(DysonSensor):
     _SENSOR_NAME = "HEPA Filter Life"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_unit_of_measurement = PERCENTAGE
+    _attr_native_unit_of_measurement = PERCENTAGE
 
     @property
     def state(self) -> int:
@@ -179,7 +179,7 @@ class DysonCombinedFilterLifeSensor(DysonSensor):
     _SENSOR_NAME = "Filter Life"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_unit_of_measurement = PERCENTAGE
+    _attr_native_unit_of_measurement = PERCENTAGE
 
     @property
     def state(self) -> int:
@@ -194,7 +194,7 @@ class DysonNextDeepCleanSensor(DysonSensor):
     _SENSOR_NAME = "Next Deep Clean"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_unit_of_measurement = TIME_HOURS
+    _attr_native_unit_of_measurement = TIME_HOURS
 
     @property
     def state(self) -> int:
@@ -208,7 +208,7 @@ class DysonHumiditySensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "humidity"
     _SENSOR_NAME = "Humidity"
     _attr_device_class = SensorDeviceClass.HUMIDITY
-    _attr_unit_of_measurement = PERCENTAGE
+    _attr_native_unit_of_measurement = PERCENTAGE
 
     @environmental_property
     def state(self) -> int:
@@ -222,7 +222,7 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "temperature"
     _SENSOR_NAME = "Temperature"
     _attr_device_class = SensorDeviceClass.TEMPERATURE
-    native_unit_of_measurement = TEMP_CELSIUS
+    _attr_native_unit_of_measurement = TEMP_CELSIUS
 
     @environmental_property
     def temperature_kelvin(self) -> int:
@@ -250,7 +250,7 @@ class DysonPM25Sensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "pm25"
     _SENSOR_NAME = "PM 2.5"
     _attr_device_class = SensorDeviceClass.PM25
-    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
     @environmental_property
     def state(self) -> int:
@@ -264,7 +264,7 @@ class DysonPM10Sensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "pm10"
     _SENSOR_NAME = "PM 10"
     _attr_device_class = SensorDeviceClass.PM10
-    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
     @environmental_property
     def state(self) -> int:
@@ -278,7 +278,7 @@ class DysonParticulatesSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "pm1"
     _SENSOR_NAME = "Particulates"
     _attr_device_class = SensorDeviceClass.PM1
-    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
     @environmental_property
     def state(self) -> int:
@@ -292,7 +292,7 @@ class DysonVOCSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "voc"
     _SENSOR_NAME = "Volatile Organic Compounds"
     _attr_device_class = SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS
-    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
     @environmental_property
     def state(self) -> int:
@@ -306,7 +306,7 @@ class DysonNO2Sensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "no2"
     _SENSOR_NAME = "Nitrogen Dioxide"
     _attr_device_class = SensorDeviceClass.NITROGEN_DIOXIDE
-    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
     @environmental_property
     def state(self) -> int:

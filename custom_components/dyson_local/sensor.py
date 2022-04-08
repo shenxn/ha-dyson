@@ -322,12 +322,13 @@ class DysonNO2Sensor(DysonSensorEnvironmental):
         """Return the state of the sensor."""
         return self._device.nitrogen_dioxide
 
+    
 class DysonHCHOSensor(DysonSensorEnvironmental):
     """Dyson sensor for Formaldehyde."""
 
     _SENSOR_TYPE = "hcho"
     _SENSOR_NAME = "Formaldehyde"
-    _attr_device_class = SensorDeviceClass.NONE
+    _attr_device_class = SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS
     _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
     @environmental_property

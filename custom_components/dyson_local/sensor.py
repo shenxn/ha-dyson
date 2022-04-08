@@ -75,6 +75,8 @@ async def async_setup_entry(
         if isinstance(device, DysonPureHumidifyCool) or isinstance(
             device, DysonPurifierHumidifyCoolFormaldehyde):
             entities.append(DysonNextDeepCleanSensor(device, name))
+        if isinstance(device, DysonPurifierHumidifyCoolFormaldehyde):
+            entities.append(DysonHCHOSensor(coordinator, device, name))
     async_add_entities(entities)
 
 
@@ -319,3 +321,16 @@ class DysonNO2Sensor(DysonSensorEnvironmental):
     def state(self) -> int:
         """Return the state of the sensor."""
         return self._device.nitrogen_dioxide
+
+class DysonHCHOSensor(DysonSensorEnvironmental):
+    """Dyson sensor for Formaldehyde."""
+
+    _SENSOR_TYPE = "hcho"
+    _SENSOR_NAME = "Formaldehyde"
+    _attr_device_class = SensorDeviceClass.NONE
+    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+
+    @environmental_property
+    def state(self) -> int:
+        """Return the state of the sensor."""
+        return self._device.formaldehyde

@@ -1,6 +1,6 @@
 {
   "config": {
-    "flow_title": "Dyson: {name} ({serial})",
+    "flow_title": "Dyson - {name} ({serial})",
     "step": {
       "user": {
         "data": {
@@ -10,8 +10,8 @@
       "wifi": {
         "description": "Find your device WiFi information from the sticker on your device body or user's manual. Don't fill in your home WiFi info.",
         "data": {
-          "ssid": "Device WiFi SSID",
-          "password": "Device WiFi Password",
+          "ssid": "Product SSID",
+          "password": "Product Wi-Fi Password",
           "host": "Host (Optional)"
         }
       },

@@ -1,4 +1,4 @@
-# HomeAssistant Custom Integration for Dyson
+# Home Assistant custom integration for dyson
 
 This custom integration is still under development.
 
@@ -62,7 +62,7 @@ If you want to manually set up Dyson Local, you need to get credentials first. C
 
 ## Debug Log
 
-To enable debug log, add the following lines to your `configuration.yaml` and restart your HomeAssistant.
+To enable debug log, add the following lines to your `configuration.yaml` and restart your Home Assistant.
 
 ```yaml
 logger:

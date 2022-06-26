@@ -89,7 +89,10 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     @property
     def target_temperature(self) -> int:
         """Return the target temperature."""
-        return self._device.heat_target - 273
+        if not self._device.heat_mode_is_on:
+            return self._device.speed
+        else:
+            return self._device.heat_target - 273
 
     @environmental_property
     def _current_temperature_kelvin(self) -> int:
@@ -122,6 +125,11 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
         if not self._device.heat_mode_is_on:
             return 10
         return 37
+
+    @property
+    def target_temperature_step(self):
+        """Return the maximum temperature."""
+        return 1
 
     def set_temperature(self, **kwargs):
         """Set new target temperature."""

@@ -23,6 +23,8 @@ async def async_setup_entry(
     entities = [
         DysonNightModeSwitchEntity(device, name),
         DysonContinuousMonitoringSwitchEntity(device, name),
+        DysonOscillationSwitchEntity(device, name),
+        DysonAutoModeSwitchEntity(device, name),
     ]
     if isinstance(device, DysonPureHotCoolLink):
         entities.append(DysonFocusModeSwitchEntity(device, name))
@@ -125,3 +127,63 @@ class DysonFocusModeSwitchEntity(DysonEntity, SwitchEntity):
     def turn_off(self):
         """Turn off switch."""
         return self._device.disable_focus_mode()
+    
+    
+class DysonOscillationSwitchEntity(DysonEntity, SwitchEntity):
+    """Dyson Pure Hot+Cool Link oscillation switch."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:rotate-3d-variant"
+
+    @property
+    def sub_name(self):
+        """Return the name of the entity."""
+        return "Oscillation"
+
+    @property
+    def sub_unique_id(self):
+        """Return the unique id of the entity."""
+        return "oscillation"
+
+    @property
+    def is_on(self):
+        """Return if switch is on."""
+        return self._device.oscillation
+
+    def turn_on(self):
+        """Turn on switch."""
+        return self._device.enable_oscillation()
+
+    def turn_off(self):
+        """Turn off switch."""
+        return self._device.disable_oscillation()
+    
+    
+class DysonAutoModeSwitchEntity(DysonEntity, SwitchEntity):
+    """Dyson Pure Hot+Cool Link auto mode switch."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_icon = "mdi:fan-auto"
+
+    @property
+    def sub_name(self):
+        """Return the name of the entity."""
+        return "Auto Mode"
+
+    @property
+    def sub_unique_id(self):
+        """Return the unique id of the entity."""
+        return "auto_mode"
+
+    @property
+    def is_on(self):
+        """Return if switch is on."""
+        return self._device.auto_mode
+
+    def turn_on(self):
+        """Turn on switch."""
+        return self._device.enable_auto_mode()
+
+    def turn_off(self):
+        """Turn off switch."""
+        return self._device.disable_auto_mode()

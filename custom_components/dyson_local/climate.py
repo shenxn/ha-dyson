@@ -20,6 +20,7 @@ from homeassistant.components.climate.const import (
     SUPPORT_FAN_MODE,
     SUPPORT_TARGET_TEMPERATURE,
 )
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import ATTR_TEMPERATURE, CONF_NAME, TEMP_CELSIUS
 from homeassistant.core import Callable, HomeAssistant
@@ -33,7 +34,6 @@ HVAC_MODES = [HVAC_MODE_OFF, HVAC_MODE_COOL, HVAC_MODE_HEAT]
 FAN_MODES = [FAN_FOCUS, FAN_DIFFUSE]
 SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE
 SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | SUPPORT_FAN_MODE
-
 
 async def async_setup_entry(
     hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
@@ -89,7 +89,10 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     @property
     def target_temperature(self) -> int:
         """Return the target temperature."""
-        return self._device.heat_target - 273
+        if not self._device.heat_mode_is_on:
+            return self._device.speed
+        else:
+            return self._device.heat_target - 273
 
     @environmental_property
     def _current_temperature_kelvin(self) -> int:
@@ -112,12 +115,21 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     @property
     def min_temp(self):
         """Return the minimum temperature."""
+        if not self._device.heat_mode_is_on:
+            return 1
         return 1
 
     @property
     def max_temp(self):
         """Return the maximum temperature."""
+        if not self._device.heat_mode_is_on:
+            return 10
         return 37
+
+    @property
+    def target_temperature_step(self):
+        """Return the maximum temperature."""
+        return 1
 
     def set_temperature(self, **kwargs):
         """Set new target temperature."""
@@ -129,7 +141,10 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
         # Limit the target temperature into acceptable range.
         target_temp = min(self.max_temp, target_temp)
         target_temp = max(self.min_temp, target_temp)
-        self._device.set_heat_target(target_temp + 273)
+        if self._device.heat_mode_is_on:
+            self._device.set_heat_target(target_temp + 273)
+        else:
+            self._device.set_speed(int(target_temp))
 
     def set_hvac_mode(self, hvac_mode: str):
         """Set new hvac mode."""

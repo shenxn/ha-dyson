@@ -1,0 +1,42 @@
+{
+    "config":{
+       "flow_title":"Dyson - {name} ({serial})",
+       "step":{
+          "user":{
+             "data":{
+                "method":"Einrichtungsmethode"
+             }
+          },
+          "wifi":{
+             "description":"Gebe die WiFi-Informationen von dem Aufkleber auf dem Gerät und aus dem Benutzerhandbuch ein. (Nicht die WiFi-Informationen für Ihr Zuhause)",
+             "data":{
+                "ssid":"SSID Name (Product SSID)",
+                "password":"SSID Passwort (Product Wi-Fi Password)",
+                "host":"Host (Optional)"
+             }
+          },
+          "manual":{
+             "data":{
+                "serial":"Seriennummer",
+                "credential":"Berechtigungsnachweis (Credential)",
+                "host":"Host (Optional)",
+                "device_type":"Gerätetyp"
+             }
+          },
+          "host":{
+             "data":{
+                "host":"Host (Optional)"
+             }
+          }
+       },
+       "error":{
+          "cannot_connect":"Verbindung fehlgeschlagen",
+          "cannot_find":"Das Gerät konnte mit der Erkennung nicht gefunden werden",
+          "invalid_auth":"Ungültige Authentifizierung",
+          "cannot_parse_wifi_info":"Fehler beim Einfügen der WiFi-Informationen des Geräts"
+       },
+       "abort":{
+          "already_configured":"Gerät bereits konfiguriert"
+       }
+    }
+ }

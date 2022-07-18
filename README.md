@@ -54,7 +54,7 @@ Version 0.6.1 introduced a new way to set up. This is inspired by https://commun
 
 ### Setup using Dyson cloud account
 
-You can also set up Dyson Cloud first so that you don't need to manually get device credentials. To do so, go to **Configuration** -> **Integrations** and click the **+** button. Then find Dyson Cloud. After successful setup, all devices under the account will be shown as discovered entities and you can then set up Dyson Local with single click. Leave host blank to using zeroconf discovery. After that, you can even remove Dyson Cloud entity if you don't need cleaning maps. All local devices that are already set up will remain untouched.
+You can also set up Dyson Cloud first so that you don't need to manually get device credentials. To do so, go to **Configuration** -> **Integrations** and click the **+** button. Then find Dyson Cloud. For the Dyson Cloud integration to work you HAVE to sign out of the Dyson link app first because it blocks all further attempts at logging in. The error message when trying to log in without logging out of the app first doesn't state this fact, so be sure to follow this step precisely. After successful setup, all devices under the account will be shown as discovered entities and you can then set up Dyson Local with single click. Leave host blank to using zeroconf discovery. After that, you can even remove Dyson Cloud entity if you don't need cleaning maps. All local devices that are already set up will remain untouched.
 
 ### Setup manually
 

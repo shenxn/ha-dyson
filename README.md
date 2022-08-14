@@ -22,6 +22,18 @@ The minimum supported Home Assistant version is 2021.12.0.
 
 You can install using HACS. Adding https://github.com/shenxn/ha-dyson as custom repository and then install Dyson Local. If you want cloud functionalities as well, add https://github.com/shenxn/ha-dyson-cloud and install Dyson Cloud.
 
+In order to correctly connect with Dyson Cloud, you have to:
+
+1. Connect your device with your “Dyson Link” app (Android or iOS).
+2. Logout from your “Dyson Link” app, so that the welcome/login screen appears.
+This ensures that you can register your device in HA and avoid the “Unknown error occurred” message.
+3. Install your Dyson Cloud + Dyson Local integration using HACS.
+4. Restart Home Assistant.
+5. Go to integrations > add integration > search for Dyson Cloud and add
+6. Enter your email address > enter your code received via email > enter your password
+Your device should be added to HA.
+7. Log into your Android / iOS app again.
+
 You can also install manually
 
 ## Local and Cloud

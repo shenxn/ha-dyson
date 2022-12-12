@@ -9,6 +9,7 @@ from libdyson import (
     DysonPureCoolLink,
     DysonPureHumidifyCool,
     DysonPurifierHumidifyCoolFormaldehyde,
+    DysonPureHotCoolFormaldehyde,
 )
 from libdyson.const import MessageType
 
@@ -75,7 +76,8 @@ async def async_setup_entry(
         if isinstance(device, DysonPureHumidifyCool) or isinstance(
             device, DysonPurifierHumidifyCoolFormaldehyde):
             entities.append(DysonNextDeepCleanSensor(device, name))
-        if isinstance(device, DysonPurifierHumidifyCoolFormaldehyde):
+        if isinstance(device, DysonPurifierHumidifyCoolFormaldehyde) or isinstance(
+            device, DysonPureHotCoolFormaldehyde):
             entities.append(DysonHCHOSensor(coordinator, device, name))
     async_add_entities(entities)
 
@@ -329,7 +331,8 @@ class DysonHCHOSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "hcho"
     _SENSOR_NAME = "Formaldehyde"
     _attr_device_class = SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS
-    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     @environmental_property
     def state(self) -> int:

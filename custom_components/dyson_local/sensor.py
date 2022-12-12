@@ -331,7 +331,8 @@ class DysonHCHOSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "hcho"
     _SENSOR_NAME = "Formaldehyde"
     _attr_device_class = SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS
-    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_state_class = SensorStateClass.MEASUREMENT
 
     @environmental_property
     def state(self) -> int:

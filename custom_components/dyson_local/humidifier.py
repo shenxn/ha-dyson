@@ -1,29 +1,31 @@
 """Humidifier platform for Dyson."""
 
-from typing import Callable, Optional
-
-from libdyson import MessageType
+from typing import Any
 
 from homeassistant.components.humidifier import (
-    DEVICE_CLASS_HUMIDIFIER,
-    SUPPORT_MODES,
+    MODE_AUTO,
+    MODE_NORMAL,
+    HumidifierDeviceClass,
     HumidifierEntity,
+    HumidifierEntityFeature,
 )
-from homeassistant.components.humidifier.const import MODE_AUTO, MODE_NORMAL
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
 
 AVAILABLE_MODES = [MODE_NORMAL, MODE_AUTO]
 
-SUPPORTED_FEATURES = SUPPORT_MODES
+SUPPORTED_FEATURES = HumidifierEntityFeature.MODES
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Dyson humidifier from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
@@ -34,13 +36,11 @@ async def async_setup_entry(
 class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
     """Dyson humidifier entity."""
 
-    _MESSAGE_TYPE = MessageType.STATE
-
-    _attr_device_class = DEVICE_CLASS_HUMIDIFIER
+    _attr_device_class = HumidifierDeviceClass.HUMIDIFIER
     _attr_available_modes = AVAILABLE_MODES
     _attr_max_humidity = 70
     _attr_min_humidity = 30
-    _attr_supported_features = SUPPORT_MODES
+    _attr_supported_features = HumidifierEntityFeature.MODES
 
     @property
     def is_on(self) -> bool:
@@ -48,7 +48,7 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
         return self._device.humidification
 
     @property
-    def target_humidity(self) -> Optional[int]:
+    def target_humidity(self) -> int | None:
         """Return the target."""
         if self._device.humidification_auto_mode:
             return None
@@ -60,11 +60,11 @@ class DysonHumidifierEntity(DysonEntity, HumidifierEntity):
         """Return current mode."""
         return MODE_AUTO if self._device.humidification_auto_mode else MODE_NORMAL
 
-    def turn_on(self, **kwargs) -> None:
+    def turn_on(self, **kwargs: Any) -> None:
         """Turn on humidification."""
         self._device.enable_humidification()
 
-    def turn_off(self, **kwargs) -> None:
+    def turn_off(self, **kwargs: Any) -> None:
         """Turn off humidification."""
         self._device.disable_humidification()
 

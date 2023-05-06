@@ -1,7 +1,5 @@
 """Select platform for dyson."""
 
-from typing import Callable
-
 from libdyson import (
     DysonPureCoolLink,
     DysonPureHotCoolLink,
@@ -14,9 +12,9 @@ from libdyson.const import AirQualityTarget
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_NAME, EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
@@ -56,18 +54,19 @@ WATER_HARDNESS_ENUM_TO_STR = {
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Dyson sensor from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
-    entities = []
-    if isinstance(device, DysonPureHotCoolLink) or isinstance(
-        device, DysonPureCoolLink
-    ):
+    entities: list[DysonEntity] = []
+    if isinstance(device, (DysonPureHotCoolLink, DysonPureCoolLink)):
         entities.append(DysonAirQualitySelect(device, name))
-    if isinstance(device, DysonPureHumidifyCool) or isinstance(
-        device, DysonPurifierHumidifyCoolFormaldehyde):
+    if isinstance(
+        device, (DysonPureHumidifyCool, DysonPurifierHumidifyCoolFormaldehyde)
+    ):
         entities.extend(
             [
                 DysonOscillationModeSelect(device, name),

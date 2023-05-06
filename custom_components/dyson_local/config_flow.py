@@ -1,8 +1,9 @@
 """Config flow for Dyson integration."""
 
+from collections.abc import Mapping
 import logging
 import threading
-from typing import Optional
+from typing import Any
 
 from libdyson import DEVICE_TYPE_NAMES, get_device, get_mqtt_info_from_wifi_info
 from libdyson.cloud import DysonDeviceInfo
@@ -17,6 +18,7 @@ import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.components.zeroconf import async_get_instance
 from homeassistant.const import CONF_HOST, CONF_NAME
+from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import CONF_CREDENTIAL, CONF_DEVICE_TYPE, CONF_SERIAL, DOMAIN
@@ -41,14 +43,14 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_LOCAL_PUSH
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the config flow."""
-        self._device_info = None
+        self._device_info: DysonDeviceInfo
 
-    async def async_step_user(self, info: Optional[dict] = None):
+    async def async_step_user(self, user_input: dict | None = None) -> FlowResult:
         """Handle step initialized by user."""
-        if info is not None:
-            if info[CONF_METHOD] == "wifi":
+        if user_input is not None:
+            if user_input[CONF_METHOD] == "wifi":
                 return await self.async_step_wifi()
             return await self.async_step_manual()
 
@@ -57,7 +59,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({vol.Required(CONF_METHOD): vol.In(SETUP_METHODS)}),
         )
 
-    async def async_step_wifi(self, info: Optional[dict] = None):
+    async def async_step_wifi(self, info: dict | None = None) -> FlowResult:
         """Handle step to setup using device WiFi information."""
         errors = {}
         if info is not None:
@@ -108,26 +110,26 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def async_step_manual(self, info: Optional[dict] = None):
+    async def async_step_manual(self, manual_info: dict | None = None) -> FlowResult:
         """Handle step to setup manually."""
         errors = {}
-        if info is not None:
-            serial = info[CONF_SERIAL]
+        if manual_info is not None:
+            serial = manual_info[CONF_SERIAL]
             for entry in self._async_current_entries():
                 if entry.unique_id == serial:
                     return self.async_abort(reason="already_configured")
             await self.async_set_unique_id(serial)
             self._abort_if_unique_id_configured()
 
-            device_type = info[CONF_DEVICE_TYPE]
+            device_type = manual_info[CONF_DEVICE_TYPE]
             device_type_name = DEVICE_TYPE_NAMES[device_type]
             try:
                 data = await self._async_get_entry_data(
                     serial,
-                    info[CONF_CREDENTIAL],
+                    manual_info[CONF_CREDENTIAL],
                     device_type,
                     device_type_name,
-                    info.get(CONF_HOST),
+                    manual_info.get(CONF_HOST),
                 )
             except InvalidAuth:
                 errors["base"] = "invalid_auth"
@@ -141,35 +143,39 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data=data,
                 )
 
-        info = info or {}
+        manual_info = manual_info or {}
         return self.async_show_form(
             step_id="manual",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_SERIAL, default=info.get(CONF_SERIAL, "")): str,
                     vol.Required(
-                        CONF_CREDENTIAL, default=info.get(CONF_CREDENTIAL, "")
+                        CONF_SERIAL, default=manual_info.get(CONF_SERIAL, "")
                     ): str,
                     vol.Required(
-                        CONF_DEVICE_TYPE, default=info.get(CONF_DEVICE_TYPE, "")
+                        CONF_CREDENTIAL, default=manual_info.get(CONF_CREDENTIAL, "")
+                    ): str,
+                    vol.Required(
+                        CONF_DEVICE_TYPE, default=manual_info.get(CONF_DEVICE_TYPE, "")
                     ): vol.In(DEVICE_TYPE_NAMES),
-                    vol.Optional(CONF_HOST, default=info.get(CONF_HOST, "")): str,
+                    vol.Optional(
+                        CONF_HOST, default=manual_info.get(CONF_HOST, "")
+                    ): str,
                 }
             ),
             errors=errors,
         )
 
-    async def async_step_host(self, info: Optional[dict] = None):
+    async def async_step_host(self, host_info: dict | None = None) -> FlowResult:
         """Handle step to set host."""
         errors = {}
-        if info is not None:
+        if host_info is not None:
             try:
                 data = await self._async_get_entry_data(
                     self._device_info.serial,
                     self._device_info.credential,
                     self._device_info.product_type,
                     self._device_info.name,
-                    info.get(CONF_HOST),
+                    host_info.get(CONF_HOST),
                 )
             except CannotConnect:
                 errors["base"] = "cannot_connect"
@@ -181,27 +187,27 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data=data,
                 )
 
-        info = info or {}
+        host_info = host_info or {}
         return self.async_show_form(
             step_id="host",
             data_schema=vol.Schema(
-                {vol.Optional(CONF_HOST, default=info.get(CONF_HOST, "")): str}
+                {vol.Optional(CONF_HOST, default=host_info.get(CONF_HOST, "")): str}
             ),
             errors=errors,
         )
 
-    async def async_step_discovery(self, info: DysonDeviceInfo):
+    async def async_step_discovery(self, discovery_info: DysonDeviceInfo) -> FlowResult:
         """Handle step initialized by dyson_cloud discovery."""
         for entry in self._async_current_entries():
-            if entry.unique_id == info.serial:
+            if entry.unique_id == discovery_info.serial:
                 return self.async_abort(reason="already_configured")
-        await self.async_set_unique_id(info.serial)
+        await self.async_set_unique_id(discovery_info.serial)
         self._abort_if_unique_id_configured()
         self.context["title_placeholders"] = {
-            CONF_NAME: info.name,
-            CONF_SERIAL: info.serial,
+            CONF_NAME: discovery_info.name,
+            CONF_SERIAL: discovery_info.serial,
         }
-        self._device_info = info
+        self._device_info = discovery_info
         return await self.async_step_host()
 
     async def _async_get_entry_data(
@@ -210,8 +216,8 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         credential: str,
         device_type: str,
         name: str,
-        host: Optional[str] = None,
-    ) -> Optional[str]:
+        host: str | None = None,
+    ) -> Mapping[str, Any]:
         """Try connect and return config entry data."""
         await self._async_try_connect(serial, credential, device_type, host)
         return {
@@ -227,7 +233,7 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         serial: str,
         credential: str,
         device_type: str,
-        host: Optional[str] = None,
+        host: str | None = None,
     ) -> None:
         """Try connect."""
         device = get_device(serial, credential, device_type)
@@ -256,11 +262,11 @@ class DysonLocalConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         # Try connect to the device
         try:
             device.connect(host)
-        except DysonInvalidCredential:
-            raise InvalidAuth
+        except DysonInvalidCredential as err:
+            raise InvalidAuth from err
         except DysonException as err:
             _LOGGER.debug("Failed to connect to device: %s", err)
-            raise CannotConnect
+            raise CannotConnect from err
 
 
 class CannotConnect(HomeAssistantError):

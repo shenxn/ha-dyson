@@ -1,17 +1,15 @@
 """Binary sensor platform for dyson."""
 
-from typing import Callable
-
 from libdyson import Dyson360Eye, Dyson360Heurist, DysonPureHotCoolLink
 
 from homeassistant.components.binary_sensor import (
-    DEVICE_CLASS_BATTERY_CHARGING,
+    BinarySensorDeviceClass,
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_NAME, EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
@@ -20,12 +18,14 @@ ICON_BIN_FULL = "mdi:delete-variant"
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Dyson binary sensor from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
-    entities = []
+    entities: list[DysonEntity] = []
     if isinstance(device, Dyson360Eye):
         entities.append(DysonVacuumBatteryChargingSensor(device, name))
     if isinstance(device, Dyson360Heurist):
@@ -51,9 +51,9 @@ class DysonVacuumBatteryChargingSensor(DysonEntity, BinarySensorEntity):
         return self._device.is_charging
 
     @property
-    def device_class(self) -> str:
+    def device_class(self) -> BinarySensorDeviceClass:
         """Return the device class of the sensor."""
-        return DEVICE_CLASS_BATTERY_CHARGING
+        return BinarySensorDeviceClass.BATTERY_CHARGING
 
     @property
     def sub_name(self) -> str:

@@ -1,6 +1,7 @@
 """Vacuum platform for Dyson."""
 
-from typing import Any, Callable, List, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from libdyson import (
     Dyson360Eye,
@@ -15,30 +16,25 @@ from homeassistant.components.vacuum import (
     STATE_DOCKED,
     STATE_ERROR,
     STATE_RETURNING,
-    SUPPORT_BATTERY,
-    SUPPORT_FAN_SPEED,
-    SUPPORT_PAUSE,
-    SUPPORT_RETURN_HOME,
-    SUPPORT_START,
-    SUPPORT_STATE,
-    SUPPORT_STATUS,
     StateVacuumEntity,
+    VacuumEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, STATE_PAUSED
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
 
 SUPPORTED_FEATURES = (
-    SUPPORT_START
-    | SUPPORT_PAUSE
-    | SUPPORT_RETURN_HOME
-    | SUPPORT_FAN_SPEED
-    | SUPPORT_STATUS
-    | SUPPORT_STATE
-    | SUPPORT_BATTERY
+    VacuumEntityFeature.START
+    | VacuumEntityFeature.PAUSE
+    | VacuumEntityFeature.RETURN_HOME
+    | VacuumEntityFeature.FAN_SPEED
+    | VacuumEntityFeature.STATUS
+    | VacuumEntityFeature.STATE
+    | VacuumEntityFeature.BATTERY
 )
 
 DYSON_STATUS = {
@@ -131,16 +127,17 @@ ATTR_POSITION = "position"
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Dyson vacuum from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
     if isinstance(device, Dyson360Eye):
-        entity = Dyson360EyeEntity(device, name)
+        async_add_entities([Dyson360EyeEntity(device, name)])
     else:  # Dyson360Heurist
-        entity = Dyson360HeuristEntity(device, name)
-    async_add_entities([entity])
+        async_add_entities([Dyson360HeuristEntity(device, name)])
 
 
 class DysonVacuumEntity(DysonEntity, StateVacuumEntity):
@@ -167,7 +164,7 @@ class DysonVacuumEntity(DysonEntity, StateVacuumEntity):
         return self._device.is_connected
 
     @property
-    def supported_features(self) -> int:
+    def supported_features(self) -> VacuumEntityFeature:
         """Flag vacuum cleaner robot features that are supported."""
         return SUPPORTED_FEATURES
 
@@ -183,7 +180,7 @@ class DysonVacuumEntity(DysonEntity, StateVacuumEntity):
         """Pause the device."""
         self._device.pause()
 
-    def return_to_base(self, **kwargs) -> None:
+    def return_to_base(self, **kwargs: Any) -> None:
         """Return the device to base."""
         self._device.abort()
 
@@ -197,7 +194,7 @@ class Dyson360EyeEntity(DysonVacuumEntity):
         return EYE_POWER_MODE_ENUM_TO_STR[self._device.power_mode]
 
     @property
-    def fan_speed_list(self) -> List[str]:
+    def fan_speed_list(self) -> list[str]:
         """Get the list of available fan speed steps of the vacuum cleaner."""
         return list(EYE_POWER_MODE_STR_TO_ENUM.keys())
 
@@ -208,7 +205,7 @@ class Dyson360EyeEntity(DysonVacuumEntity):
         else:
             self._device.start()
 
-    def set_fan_speed(self, fan_speed: str, **kwargs) -> None:
+    def set_fan_speed(self, fan_speed: str, **kwargs: Any) -> None:
         """Set fan speed."""
         self._device.set_power_mode(EYE_POWER_MODE_STR_TO_ENUM[fan_speed])
 
@@ -222,7 +219,7 @@ class Dyson360HeuristEntity(DysonVacuumEntity):
         return HEURIST_POWER_MODE_ENUM_TO_STR[self._device.current_power_mode]
 
     @property
-    def fan_speed_list(self) -> List[str]:
+    def fan_speed_list(self) -> list[str]:
         """Get the list of available fan speed steps of the vacuum cleaner."""
         return list(HEURIST_POWER_MODE_STR_TO_ENUM.keys())
 
@@ -233,6 +230,6 @@ class Dyson360HeuristEntity(DysonVacuumEntity):
         else:
             self._device.start_all_zones()
 
-    def set_fan_speed(self, fan_speed: str, **kwargs) -> None:
+    def set_fan_speed(self, fan_speed: str, **kwargs: Any) -> None:
         """Set fan speed."""
         self._device.set_default_power_mode(HEURIST_POWER_MODE_STR_TO_ENUM[fan_speed])

@@ -4,7 +4,6 @@ import asyncio
 from datetime import timedelta
 from functools import partial
 import logging
-from typing import List, Optional
 
 from libdyson import (
     Dyson360Eye,
@@ -25,7 +24,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, EVENT_HOMEASSISTANT_STOP
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.helpers.entity import Entity
+from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.typing import ConfigType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
@@ -43,7 +43,7 @@ _LOGGER = logging.getLogger(__name__)
 ENVIRONMENTAL_DATA_UPDATE_INTERVAL = timedelta(seconds=30)
 
 
-async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up Dyson integration."""
     hass.data[DOMAIN] = {
         DATA_DEVICES: {},
@@ -89,20 +89,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     def setup_entry(host: str, is_discovery: bool = True) -> bool:
         try:
             device.connect(host)
-        except DysonException:
+        except DysonException as exc:
             if is_discovery:
                 _LOGGER.error(
                     "Failed to connect to device %s at %s",
                     device.serial,
                     host,
                 )
-                return
-            raise ConfigEntryNotReady
+                return False
+            raise ConfigEntryNotReady from exc
         hass.data[DOMAIN][DATA_DEVICES][entry.entry_id] = device
         hass.data[DOMAIN][DATA_COORDINATORS][entry.entry_id] = coordinator
         asyncio.run_coroutine_threadsafe(
             _async_forward_entry_setup(), hass.loop
         ).result()
+        return True
 
     host = entry.data.get(CONF_HOST)
     if host:
@@ -133,7 +134,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload Dyson local."""
     device = hass.data[DOMAIN][DATA_DEVICES][entry.entry_id]
-    ok = all(
+    unloads = all(
         await asyncio.gather(
             *[
                 hass.config_entries.async_forward_entry_unload(entry, component)
@@ -141,25 +142,25 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ]
         )
     )
-    if ok:
+    if unloads:
         hass.data[DOMAIN][DATA_DEVICES].pop(entry.entry_id)
         hass.data[DOMAIN][DATA_COORDINATORS].pop(entry.entry_id)
         await hass.async_add_executor_job(device.disconnect)
-        # TODO: stop discovery
-    return ok
+    return unloads
 
 
 @callback
-def _async_get_platforms(device: DysonDevice) -> List[str]:
-    if isinstance(device, Dyson360Eye) or isinstance(device, Dyson360Heurist):
+def _async_get_platforms(device: DysonDevice) -> list[str]:
+    if isinstance(device, (Dyson360Eye, Dyson360Heurist)):
         return ["binary_sensor", "sensor", "vacuum"]
     platforms = ["fan", "select", "sensor", "switch"]
     if isinstance(device, DysonPureHotCool):
         platforms.append("climate")
     if isinstance(device, DysonPureHotCoolLink):
         platforms.extend(["binary_sensor", "climate"])
-    if isinstance(device, DysonPureHumidifyCool) or isinstance(
-        device, DysonPurifierHumidifyCoolFormaldehyde):
+    if isinstance(
+        device, (DysonPureHumidifyCool, DysonPurifierHumidifyCoolFormaldehyde)
+    ):
         platforms.append("humidifier")
     return platforms
 
@@ -169,7 +170,7 @@ class DysonEntity(Entity):
 
     _MESSAGE_TYPE = MessageType.STATE
 
-    def __init__(self, device: DysonDevice, name: str):
+    def __init__(self, device: DysonDevice, name: str) -> None:
         """Initialize the entity."""
         self._device = device
         self._name = name
@@ -195,7 +196,7 @@ class DysonEntity(Entity):
         return f"{self._name} {self.sub_name}"
 
     @property
-    def sub_name(self) -> Optional[str]:
+    def sub_name(self) -> str | None:
         """Return sub name of the entity."""
         return None
 
@@ -207,16 +208,16 @@ class DysonEntity(Entity):
         return f"{self._device.serial}-{self.sub_unique_id}"
 
     @property
-    def sub_unique_id(self) -> str:
+    def sub_unique_id(self) -> str | None:
         """Return the entity sub unique id."""
         return None
 
     @property
-    def device_info(self) -> dict:
+    def device_info(self) -> DeviceInfo:
         """Return device info of the entity."""
-        return {
-            "identifiers": {(DOMAIN, self._device.serial)},
-            "name": self._name,
-            "manufacturer": "Dyson",
-            "model": self._device.device_type,
-        }
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._device.serial)},
+            name=self._name,
+            manufacturer="Dyson",
+            model=self._device.device_type,
+        )

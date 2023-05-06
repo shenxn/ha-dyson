@@ -1,21 +1,24 @@
 """Switch platform for dyson."""
 
-from typing import Callable
+
+from typing import Any
 
 from libdyson import DysonPureHotCoolLink
 
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_NAME
+from homeassistant.const import CONF_NAME, EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Dyson switch from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
@@ -35,32 +38,32 @@ class DysonNightModeSwitchEntity(DysonEntity, SwitchEntity):
     _attr_entity_category = EntityCategory.CONFIG
 
     @property
-    def sub_name(self):
+    def sub_name(self) -> str:
         """Return the name of the entity."""
         return "Night Mode"
 
     @property
-    def sub_unique_id(self):
+    def sub_unique_id(self) -> str:
         """Return the unique id of the entity."""
         return "night_mode"
 
     @property
-    def icon(self):
+    def icon(self) -> str:
         """Return the icon of the entity."""
         return "mdi:power-sleep"
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Return if night mode is on."""
         return self._device.night_mode
 
-    def turn_on(self):
+    def turn_on(self, **kwargs: Any) -> None:
         """Turn on night mode."""
-        return self._device.enable_night_mode()
+        self._device.enable_night_mode()
 
-    def turn_off(self):
+    def turn_off(self, **kwargs: Any) -> None:
         """Turn off night mode."""
-        return self._device.disable_night_mode()
+        self._device.disable_night_mode()
 
 
 class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
@@ -69,32 +72,32 @@ class DysonContinuousMonitoringSwitchEntity(DysonEntity, SwitchEntity):
     _attr_entity_category = EntityCategory.CONFIG
 
     @property
-    def sub_name(self):
+    def sub_name(self) -> str:
         """Return the name of the entity."""
         return "Continuous Monitoring"
 
     @property
-    def sub_unique_id(self):
+    def sub_unique_id(self) -> str:
         """Return the unique id of the entity."""
         return "continuous_monitoring"
 
     @property
-    def icon(self):
+    def icon(self) -> str:
         """Return the icon of the entity."""
         return "mdi:eye" if self.is_on else "mdi:eye-off"
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Return if continuous monitoring is on."""
         return self._device.continuous_monitoring
 
-    def turn_on(self):
+    def turn_on(self, **kwargs: Any) -> None:
         """Turn on continuous monitoring."""
-        return self._device.enable_continuous_monitoring()
+        self._device.enable_continuous_monitoring()
 
-    def turn_off(self):
+    def turn_off(self, **kwargs: Any) -> None:
         """Turn off continuous monitoring."""
-        return self._device.disable_continuous_monitoring()
+        self._device.disable_continuous_monitoring()
 
 
 class DysonFocusModeSwitchEntity(DysonEntity, SwitchEntity):
@@ -104,24 +107,24 @@ class DysonFocusModeSwitchEntity(DysonEntity, SwitchEntity):
     _attr_icon = "mdi:image-filter-center-focus"
 
     @property
-    def sub_name(self):
+    def sub_name(self) -> str:
         """Return the name of the entity."""
         return "Focus Mode"
 
     @property
-    def sub_unique_id(self):
+    def sub_unique_id(self) -> str:
         """Return the unique id of the entity."""
         return "focus_mode"
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Return if switch is on."""
         return self._device.focus_mode
 
-    def turn_on(self):
+    def turn_on(self, **kwargs: Any) -> None:
         """Turn on switch."""
-        return self._device.enable_focus_mode()
+        self._device.enable_focus_mode()
 
-    def turn_off(self):
+    def turn_off(self, **kwargs: Any) -> None:
         """Turn off switch."""
-        return self._device.disable_focus_mode()
+        self._device.disable_focus_mode()

@@ -1,6 +1,5 @@
 """Sensor platform for dyson."""
 
-from typing import Callable, Union
 
 from libdyson import (
     Dyson360Eye,
@@ -12,17 +11,22 @@ from libdyson import (
 )
 from libdyson.const import MessageType
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass, SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONCENTRATION_MICROGRAMS_PER_CUBIC_METER,
     CONF_NAME,
     PERCENTAGE,
-    TEMP_CELSIUS,
-    TIME_HOURS,
+    EntityCategory,
+    UnitOfTemperature,
+    UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity import EntityCategory
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -30,24 +34,28 @@ from homeassistant.helpers.update_coordinator import (
 
 from . import DysonEntity
 from .const import DATA_COORDINATORS, DATA_DEVICES, DOMAIN
-from .utils import environmental_property
 
 
 async def async_setup_entry(
-    hass: HomeAssistant, config_entry: ConfigEntry, async_add_entities: Callable
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Dyson sensor from a config entry."""
     device = hass.data[DOMAIN][DATA_DEVICES][config_entry.entry_id]
     name = config_entry.data[CONF_NAME]
-    if isinstance(device, Dyson360Eye) or isinstance(device, Dyson360Heurist):
-        entities = [DysonBatterySensor(device, name)]
+    entities: list[DysonEntity] = []
+    if isinstance(device, (Dyson360Eye, Dyson360Heurist)):
+        entities.extend([DysonBatterySensor(device, name)])
     else:
         coordinator = hass.data[DOMAIN][DATA_COORDINATORS][config_entry.entry_id]
-        entities = [
-            DysonHumiditySensor(coordinator, device, name),
-            DysonTemperatureSensor(coordinator, device, name),
-            DysonVOCSensor(coordinator, device, name),
-        ]
+        entities.extend(
+            [
+                DysonHumiditySensor(coordinator, device, name),
+                DysonTemperatureSensor(coordinator, device, name),
+                DysonVOCSensor(coordinator, device, name),
+            ]
+        )
         if isinstance(device, DysonPureCoolLink):
             entities.extend(
                 [
@@ -72,8 +80,9 @@ async def async_setup_entry(
                         DysonHEPAFilterLifeSensor(device, name),
                     ]
                 )
-        if isinstance(device, DysonPureHumidifyCool) or isinstance(
-            device, DysonPurifierHumidifyCoolFormaldehyde):
+        if isinstance(
+            device, (DysonPureHumidifyCool, DysonPurifierHumidifyCoolFormaldehyde)
+        ):
             entities.append(DysonNextDeepCleanSensor(device, name))
         if isinstance(device, DysonPurifierHumidifyCoolFormaldehyde):
             entities.append(DysonHCHOSensor(coordinator, device, name))
@@ -84,12 +93,8 @@ class DysonSensor(SensorEntity, DysonEntity):
     """Base class for a Dyson sensor."""
 
     _MESSAGE_TYPE = MessageType.STATE
-    _SENSOR_TYPE = None
-    _SENSOR_NAME = None
-
-    def __init__(self, device: DysonDevice, name: str):
-        """Initialize the sensor."""
-        super().__init__(device, name)
+    _SENSOR_TYPE: str | None = None
+    _SENSOR_NAME: str | None = None
 
     @property
     def sub_name(self):
@@ -109,7 +114,7 @@ class DysonSensorEnvironmental(CoordinatorEntity, DysonSensor):
 
     def __init__(
         self, coordinator: DataUpdateCoordinator, device: DysonDevice, name: str
-    ):
+    ) -> None:
         """Initialize the environmental sensor."""
         CoordinatorEntity.__init__(self, coordinator)
         DysonSensor.__init__(self, device, name)
@@ -124,7 +129,7 @@ class DysonBatterySensor(DysonSensor):
     _attr_native_unit_of_measurement = PERCENTAGE
 
     @property
-    def state(self) -> int:
+    def native_value(self) -> int:
         """Return the state of the sensor."""
         return self._device.battery_level
 
@@ -136,10 +141,10 @@ class DysonFilterLifeSensor(DysonSensor):
     _SENSOR_NAME = "Filter Life"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_native_unit_of_measurement = TIME_HOURS
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
 
     @property
-    def state(self) -> int:
+    def native_value(self) -> int:
         """Return the state of the sensor."""
         return self._device.filter_life
 
@@ -154,7 +159,7 @@ class DysonCarbonFilterLifeSensor(DysonSensor):
     _attr_native_unit_of_measurement = PERCENTAGE
 
     @property
-    def state(self) -> int:
+    def native_value(self) -> int:
         """Return the state of the sensor."""
         return self._device.carbon_filter_life
 
@@ -169,7 +174,7 @@ class DysonHEPAFilterLifeSensor(DysonSensor):
     _attr_native_unit_of_measurement = PERCENTAGE
 
     @property
-    def state(self) -> int:
+    def native_value(self) -> int:
         """Return the state of the sensor."""
         return self._device.hepa_filter_life
 
@@ -184,7 +189,7 @@ class DysonCombinedFilterLifeSensor(DysonSensor):
     _attr_native_unit_of_measurement = PERCENTAGE
 
     @property
-    def state(self) -> int:
+    def native_value(self) -> int:
         """Return the state of the sensor."""
         return self._device.hepa_filter_life
 
@@ -196,12 +201,19 @@ class DysonNextDeepCleanSensor(DysonSensor):
     _SENSOR_NAME = "Next Deep Clean"
     _attr_entity_category = EntityCategory.DIAGNOSTIC
     _attr_icon = "mdi:filter-outline"
-    _attr_native_unit_of_measurement = TIME_HOURS
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
 
     @property
-    def state(self) -> int:
+    def native_value(self) -> int | None:
         """Return the state of the sensor."""
-        return self._device.time_until_next_clean
+        if (value := self._device.time_until_next_clean) >= 0:
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.time_until_next_clean >= 0
 
 
 class DysonHumiditySensor(DysonSensorEnvironmental):
@@ -213,10 +225,17 @@ class DysonHumiditySensor(DysonSensorEnvironmental):
     _attr_native_unit_of_measurement = PERCENTAGE
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @environmental_property
-    def state(self) -> int:
+    @property
+    def native_value(self) -> float | None:
         """Return the state of the sensor."""
-        return self._device.humidity
+        if (value := self._device.humidity) >= 0:
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.humidity >= 0
 
 
 class DysonTemperatureSensor(DysonSensorEnvironmental):
@@ -225,27 +244,25 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
     _SENSOR_TYPE = "temperature"
     _SENSOR_NAME = "Temperature"
     _attr_device_class = SensorDeviceClass.TEMPERATURE
-    _attr_native_unit_of_measurement = TEMP_CELSIUS
+    _attr_native_unit_of_measurement = UnitOfTemperature.CELSIUS
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @environmental_property
-    def temperature_kelvin(self) -> int:
-        """Return the temperature in kelvin."""
-        return self._device.temperature
-
     @property
-    def native_value(self) -> Union[str, float]:
+    def native_value(self) -> float | None:
         """Return the "native" value for this sensor.
 
         Note that as of 2021-10-28, Home Assistant does not support converting
         from Kelvin native unit to Celsius/Fahrenheit. So we return the Celsius
         value as it's the easiest to calculate.
         """
-        temperature_kelvin = self.temperature_kelvin
-        if isinstance(temperature_kelvin, str):
-            return temperature_kelvin
+        if (value := self._device.temperature) >= 0:
+            return value - 273.15
+        return None
 
-        return temperature_kelvin - 273.15
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.temperature >= 0
 
 
 class DysonPM25Sensor(DysonSensorEnvironmental):
@@ -257,10 +274,17 @@ class DysonPM25Sensor(DysonSensorEnvironmental):
     _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @environmental_property
-    def state(self) -> int:
+    @property
+    def native_value(self) -> float | None:
         """Return the state of the sensor."""
-        return self._device.particulate_matter_2_5
+        if (value := self._device.particulate_matter_2_5) >= 0:
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.particulate_matter_2_5 >= 0
 
 
 class DysonPM10Sensor(DysonSensorEnvironmental):
@@ -272,10 +296,17 @@ class DysonPM10Sensor(DysonSensorEnvironmental):
     _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @environmental_property
-    def state(self) -> int:
+    @property
+    def native_value(self) -> int | None:
         """Return the state of the sensor."""
-        return self._device.particulate_matter_10
+        if (value := self._device.particulate_matter_10) >= 0:
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.particulate_matter_10 >= 0
 
 
 class DysonParticulatesSensor(DysonSensorEnvironmental):
@@ -287,10 +318,17 @@ class DysonParticulatesSensor(DysonSensorEnvironmental):
     _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @environmental_property
-    def state(self) -> int:
+    @property
+    def native_value(self) -> int | None:
         """Return the state of the sensor."""
-        return self._device.particulates
+        if (value := self._device.particulates) >= 0:
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.particulates >= 0
 
 
 class DysonVOCSensor(DysonSensorEnvironmental):
@@ -302,10 +340,17 @@ class DysonVOCSensor(DysonSensorEnvironmental):
     _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @environmental_property
-    def state(self) -> int:
+    @property
+    def native_value(self) -> int | None:
         """Return the state of the sensor."""
-        return self._device.volatile_organic_compounds
+        if (value := self._device.volatile_organic_compounds) >= 0:
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.volatile_organic_compounds >= 0
 
 
 class DysonNO2Sensor(DysonSensorEnvironmental):
@@ -317,21 +362,35 @@ class DysonNO2Sensor(DysonSensorEnvironmental):
     _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @environmental_property
-    def state(self) -> int:
+    @property
+    def native_value(self) -> int | None:
         """Return the state of the sensor."""
-        return self._device.nitrogen_dioxide
+        if (value := self._device.nitrogen_dioxide) >= 0:
+            return value
+        return None
 
-    
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.nitrogen_dioxide >= 0
+
+
 class DysonHCHOSensor(DysonSensorEnvironmental):
     """Dyson sensor for Formaldehyde."""
 
     _SENSOR_TYPE = "hcho"
     _SENSOR_NAME = "Formaldehyde"
     _attr_device_class = SensorDeviceClass.VOLATILE_ORGANIC_COMPOUNDS
-    _attr_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
+    _attr_native_unit_of_measurement = CONCENTRATION_MICROGRAMS_PER_CUBIC_METER
 
-    @environmental_property
-    def state(self) -> int:
+    @property
+    def native_value(self) -> int | None:
         """Return the state of the sensor."""
-        return self._device.formaldehyde
+        if (value := self._device.formaldehyde) >= 0:
+            return value
+        return None
+
+    @property
+    def available(self) -> bool:
+        """Return available only if device not in off, init or failed states."""
+        return self._device.formaldehyde >= 0

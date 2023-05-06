@@ -126,7 +126,8 @@ class DysonBatterySensor(DysonSensor):
     @property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.battery_level
+        if (value := self._device.battery_level) != "off":
+            return value
 
 
 class DysonFilterLifeSensor(DysonSensor):
@@ -141,7 +142,8 @@ class DysonFilterLifeSensor(DysonSensor):
     @property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.filter_life
+        if (value := self._device.filter_life) != "off":
+            return value
 
 
 class DysonCarbonFilterLifeSensor(DysonSensor):
@@ -156,7 +158,8 @@ class DysonCarbonFilterLifeSensor(DysonSensor):
     @property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.carbon_filter_life
+        if (value := self._device.carbon_filter_life) != "off":
+            return value
 
 
 class DysonHEPAFilterLifeSensor(DysonSensor):
@@ -171,7 +174,8 @@ class DysonHEPAFilterLifeSensor(DysonSensor):
     @property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.hepa_filter_life
+        if (value := self._device.hepa_filter_life) != "off":
+            return value
 
 
 class DysonCombinedFilterLifeSensor(DysonSensor):
@@ -186,7 +190,8 @@ class DysonCombinedFilterLifeSensor(DysonSensor):
     @property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.hepa_filter_life
+        if (value := self._device.hepa_filter_life) != "off":
+            return value
 
 
 class DysonNextDeepCleanSensor(DysonSensor):
@@ -201,7 +206,8 @@ class DysonNextDeepCleanSensor(DysonSensor):
     @property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.time_until_next_clean
+        if (value := self._device.time_until_next_clean) != "off":
+            return value
 
 
 class DysonHumiditySensor(DysonSensorEnvironmental):
@@ -216,7 +222,8 @@ class DysonHumiditySensor(DysonSensorEnvironmental):
     @environmental_property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.humidity
+        if (value := self._device.humidity) != "off":
+            return value
 
 
 class DysonTemperatureSensor(DysonSensorEnvironmental):
@@ -228,11 +235,6 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
     _attr_native_unit_of_measurement = TEMP_CELSIUS
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    @environmental_property
-    def temperature_kelvin(self) -> int:
-        """Return the temperature in kelvin."""
-        return self._device.temperature
-
     @property
     def native_value(self) -> Union[str, float]:
         """Return the "native" value for this sensor.
@@ -241,11 +243,8 @@ class DysonTemperatureSensor(DysonSensorEnvironmental):
         from Kelvin native unit to Celsius/Fahrenheit. So we return the Celsius
         value as it's the easiest to calculate.
         """
-        temperature_kelvin = self.temperature_kelvin
-        if isinstance(temperature_kelvin, str):
-            return temperature_kelvin
-
-        return temperature_kelvin - 273.15
+        if (value := self._device.temperature) != "off":
+            return value - 273.15
 
 
 class DysonPM25Sensor(DysonSensorEnvironmental):
@@ -261,6 +260,8 @@ class DysonPM25Sensor(DysonSensorEnvironmental):
     def state(self) -> int:
         """Return the state of the sensor."""
         return self._device.particulate_matter_2_5
+        if (value := self._device.particulate_matter_2_5) != "off":
+            return value
 
 
 class DysonPM10Sensor(DysonSensorEnvironmental):
@@ -276,6 +277,8 @@ class DysonPM10Sensor(DysonSensorEnvironmental):
     def state(self) -> int:
         """Return the state of the sensor."""
         return self._device.particulate_matter_10
+        if (value := self._device.particulate_matter_10) != "off":
+            return value
 
 
 class DysonParticulatesSensor(DysonSensorEnvironmental):
@@ -291,6 +294,8 @@ class DysonParticulatesSensor(DysonSensorEnvironmental):
     def state(self) -> int:
         """Return the state of the sensor."""
         return self._device.particulates
+        if (value := self._device.particulates) != "off":
+            return value
 
 
 class DysonVOCSensor(DysonSensorEnvironmental):
@@ -305,7 +310,8 @@ class DysonVOCSensor(DysonSensorEnvironmental):
     @environmental_property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.volatile_organic_compounds
+        if (value := self._device.volatile_organic_compounds) != "off":
+            return value
 
 
 class DysonNO2Sensor(DysonSensorEnvironmental):
@@ -321,6 +327,8 @@ class DysonNO2Sensor(DysonSensorEnvironmental):
     def state(self) -> int:
         """Return the state of the sensor."""
         return self._device.nitrogen_dioxide
+        if (value := self._device.nitrogen_dioxide) != "off":
+            return value
 
     
 class DysonHCHOSensor(DysonSensorEnvironmental):
@@ -334,4 +342,5 @@ class DysonHCHOSensor(DysonSensorEnvironmental):
     @environmental_property
     def state(self) -> int:
         """Return the state of the sensor."""
-        return self._device.formaldehyde
+        if (value := self._device.formaldehyde) != "off":
+            return value

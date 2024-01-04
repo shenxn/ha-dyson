@@ -17,11 +17,10 @@ from homeassistant.components.climate.const import (
     HVAC_MODE_COOL,
     HVAC_MODE_HEAT,
     HVAC_MODE_OFF,
-    SUPPORT_FAN_MODE,
-    SUPPORT_TARGET_TEMPERATURE,
+    ClimateEntityFeature,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import ATTR_TEMPERATURE, CONF_NAME, TEMP_CELSIUS
+from homeassistant.const import ATTR_TEMPERATURE, CONF_NAME, UnitOfTemperature
 from homeassistant.core import Callable, HomeAssistant
 
 from . import DysonEntity
@@ -31,8 +30,8 @@ _LOGGER = logging.getLogger(__name__)
 
 HVAC_MODES = [HVAC_MODE_OFF, HVAC_MODE_COOL, HVAC_MODE_HEAT]
 FAN_MODES = [FAN_FOCUS, FAN_DIFFUSE]
-SUPPORT_FLAGS = SUPPORT_TARGET_TEMPERATURE
-SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | SUPPORT_FAN_MODE
+SUPPORT_FLAGS = ClimateEntityFeature.TARGET_TEMPERATURE
+SUPPORT_FLAGS_LINK = SUPPORT_FLAGS | ClimateEntityFeature.FAN_MODE
 
 
 async def async_setup_entry(
@@ -84,7 +83,7 @@ class DysonClimateEntity(DysonEntity, ClimateEntity):
     @property
     def temperature_unit(self) -> str:
         """Return the unit of measurement."""
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def target_temperature(self) -> int:

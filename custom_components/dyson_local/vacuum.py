@@ -15,13 +15,7 @@ from homeassistant.components.vacuum import (
     STATE_DOCKED,
     STATE_ERROR,
     STATE_RETURNING,
-    SUPPORT_BATTERY,
-    SUPPORT_FAN_SPEED,
-    SUPPORT_PAUSE,
-    SUPPORT_RETURN_HOME,
-    SUPPORT_START,
-    SUPPORT_STATE,
-    SUPPORT_STATUS,
+    VacuumEntityFeature,    
     StateVacuumEntity,
 )
 from homeassistant.config_entries import ConfigEntry
@@ -31,14 +25,14 @@ from homeassistant.core import HomeAssistant
 from . import DysonEntity
 from .const import DATA_DEVICES, DOMAIN
 
-SUPPORTED_FEATURES = (
-    SUPPORT_START
-    | SUPPORT_PAUSE
-    | SUPPORT_RETURN_HOME
-    | SUPPORT_FAN_SPEED
-    | SUPPORT_STATUS
-    | SUPPORT_STATE
-    | SUPPORT_BATTERY
+VacuumEntityFeature = (
+    VacuumEntityFeature.START
+    | VacuumEntityFeature.PAUSE
+    | VacuumEntityFeature.RETURN_HOME
+    | VacuumEntityFeature.FAN_SPEED
+    | VacuumEntityFeature.STATUS
+    | VacuumEntityFeature.STATE
+    | VacuumEntityFeature.BATTERY
 )
 
 DYSON_STATUS = {
@@ -169,7 +163,7 @@ class DysonVacuumEntity(DysonEntity, StateVacuumEntity):
     @property
     def supported_features(self) -> int:
         """Flag vacuum cleaner robot features that are supported."""
-        return SUPPORTED_FEATURES
+        return VacuumEntityFeature
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any]:
